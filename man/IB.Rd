@@ -36,7 +36,8 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-confirm_order}{\code{IB$confirm_order()}}
 \item \href{#method-IB-get_order_status}{\code{IB$get_order_status()}}
 \item \href{#method-IB-place_and_confirm_order}{\code{IB$place_and_confirm_order()}}
-\item \href{#method-IB-get_historical_market_data}{\code{IB$get_historical_market_data()}}
+\item \href{#method-IB-get_historical_data_beta}{\code{IB$get_historical_data_beta()}}
+\item \href{#method-IB-get_historical_data}{\code{IB$get_historical_data()}}
 \item \href{#method-IB-cancel_order}{\code{IB$cancel_order()}}
 \item \href{#method-IB-get_portfolio_summary}{\code{IB$get_portfolio_summary()}}
 \item \href{#method-IB-clone}{\code{IB$clone()}}
@@ -394,17 +395,17 @@ Places an order and handles the confirmation process.
 }
 \subsection{Returns}{
 A list containing details of the order placement and confirmation.
-Get Historical Market Data
+Get Historical Market Data Beta
 
 Retrieves a list of historical market data for a given contract identifier.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-get_historical_market_data"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-get_historical_market_data}{}}}
-\subsection{Method \code{get_historical_market_data()}}{
+\if{html}{\out{<a id="method-IB-get_historical_data_beta"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_historical_data_beta}{}}}
+\subsection{Method \code{get_historical_data_beta()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_market_data(
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_data_beta(
   conid,
   period,
   bar,
@@ -431,6 +432,48 @@ Retrieves a list of historical market data for a given contract identifier.
 \item{\code{direction}}{String, optional, specify the direction from which market data should be returned.}
 
 \item{\code{barType}}{String, optional, returns valid bar types for which data may be requested.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing historical market data.
+Get Historical Market Data
+
+Retrieves historical market data for a given contract identifier.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_historical_data"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_historical_data}{}}}
+\subsection{Method \code{get_historical_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_data(
+  conid,
+  period,
+  bar,
+  exchange = NULL,
+  startTime = NULL,
+  outsideRth = NULL,
+  clean = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{conid}}{String, required, contract identifier for the ticker symbol of interest.}
+
+\item{\code{period}}{String, required, overall duration for which data should be returned.}
+
+\item{\code{bar}}{String, required, individual bars of data to be returned.}
+
+\item{\code{exchange}}{String, optional, exchange to receive data from.}
+
+\item{\code{startTime}}{String, optional, starting date of the request duration.}
+
+\item{\code{outsideRth}}{Boolean, optional, determine if data after regular trading hours is needed.}
+
+\item{\code{clean}}{Boolean, optional, if TRUE extract data object}
 }
 \if{html}{\out{</div>}}
 }

@@ -280,7 +280,8 @@ IB = R6::R6Class(
       }
     },
 
-    #' Get Historical Market Data
+    # DOESNT WORK
+    #' Get Historical Market Data Beta
     #'
     #' Retrieves a list of historical market data for a given contract identifier.
     #'
@@ -292,7 +293,7 @@ IB = R6::R6Class(
     #' @param direction String, optional, specify the direction from which market data should be returned.
     #' @param barType String, optional, returns valid bar types for which data may be requested.
     #' @return A list containing historical market data.
-    get_historical_market_data = function(conid, period, bar, outsideRth = NULL,
+    get_historical_data_beta = function(conid, period, bar, outsideRth = NULL,
                                           startTime = NULL, direction = NULL,
                                           barType = NULL) {
       query <- list(conid = conid, period = period, bar = bar,
@@ -300,6 +301,34 @@ IB = R6::R6Class(
                     direction = direction, barType = barType)
       query <- query[!sapply(query, is.null)]
       self$get("/hmds/history", query = query)
+    },
+
+    #' Get Historical Market Data
+    #'
+    #' Retrieves historical market data for a given contract identifier.
+    #'
+    #' @param conid String, required, contract identifier for the ticker symbol of interest.
+    #' @param period String, required, overall duration for which data should be returned.
+    #' @param bar String, required, individual bars of data to be returned.
+    #' @param exchange String, optional, exchange to receive data from.
+    #' @param startTime String, optional, starting date of the request duration.
+    #' @param outsideRth Boolean, optional, determine if data after regular trading hours is needed.
+    #' @param clean Boolean, optional, if TRUE extract data object
+    #' @return A list containing historical market data.
+    get_historical_data = function(conid, period, bar, exchange = NULL,
+                                   startTime = NULL, outsideRth = NULL,
+                                   clean = FALSE) {
+      query = list(conid = conid, period = period, bar = bar, exchange = exchange,
+                   startTime = startTime, outsideRth = outsideRth)
+      query <- query[!sapply(query, is.null)]
+      md = self$get("/iserver/marketdata/history", query = query)
+      if (clean) {
+        md = as.data.table(cbind.data.frame(symbol = md$symbol, rbindlist(md$data)))
+        md[, datetime := as.POSIXct(as.numeric(t) / 1000,
+                                     origin = "1970-01-01",
+                                     tz = "America/New_York")]
+      }
+      return(md)
     },
 
 
