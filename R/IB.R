@@ -280,6 +280,28 @@ IB = R6::R6Class(
       }
     },
 
+    #' Get Historical Market Data
+    #'
+    #' Retrieves a list of historical market data for a given contract identifier.
+    #'
+    #' @param conid String, required, contract identifier for which data should be requested.
+    #' @param period String, required, duration for which data should be requested.
+    #' @param bar String, required, bar size for which bars should be returned.
+    #' @param outsideRth Boolean, optional, define if data should be returned for trades outside regular trading hours.
+    #' @param startTime String, optional, specify the value from where historical data should be taken.
+    #' @param direction String, optional, specify the direction from which market data should be returned.
+    #' @param barType String, optional, returns valid bar types for which data may be requested.
+    #' @return A list containing historical market data.
+    get_historical_market_data = function(conid, period, bar, outsideRth = NULL,
+                                          startTime = NULL, direction = NULL,
+                                          barType = NULL) {
+      query <- list(conid = conid, period = period, bar = bar,
+                    outsideRth = outsideRth, startTime = startTime,
+                    direction = direction, barType = barType)
+      query <- query[!sapply(query, is.null)]
+      self$get("/hmds/history", query = query)
+    },
+
 
     #' #' @description
     #' #' Place order.

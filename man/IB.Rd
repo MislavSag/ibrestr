@@ -36,6 +36,7 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-confirm_order}{\code{IB$confirm_order()}}
 \item \href{#method-IB-get_order_status}{\code{IB$get_order_status()}}
 \item \href{#method-IB-place_and_confirm_order}{\code{IB$place_and_confirm_order()}}
+\item \href{#method-IB-get_historical_market_data}{\code{IB$get_historical_market_data()}}
 \item \href{#method-IB-cancel_order}{\code{IB$cancel_order()}}
 \item \href{#method-IB-get_portfolio_summary}{\code{IB$get_portfolio_summary()}}
 \item \href{#method-IB-clone}{\code{IB$clone()}}
@@ -393,6 +394,48 @@ Places an order and handles the confirmation process.
 }
 \subsection{Returns}{
 A list containing details of the order placement and confirmation.
+Get Historical Market Data
+
+Retrieves a list of historical market data for a given contract identifier.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_historical_market_data"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_historical_market_data}{}}}
+\subsection{Method \code{get_historical_market_data()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_market_data(
+  conid,
+  period,
+  bar,
+  outsideRth = NULL,
+  startTime = NULL,
+  direction = NULL,
+  barType = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{conid}}{String, required, contract identifier for which data should be requested.}
+
+\item{\code{period}}{String, required, duration for which data should be requested.}
+
+\item{\code{bar}}{String, required, bar size for which bars should be returned.}
+
+\item{\code{outsideRth}}{Boolean, optional, define if data should be returned for trades outside regular trading hours.}
+
+\item{\code{startTime}}{String, optional, specify the value from where historical data should be taken.}
+
+\item{\code{direction}}{String, optional, specify the direction from which market data should be returned.}
+
+\item{\code{barType}}{String, optional, returns valid bar types for which data may be requested.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing historical market data.
 #' @description
 #' Place order.
 #'
