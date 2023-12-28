@@ -6,11 +6,63 @@
 \description{
 Utils method to work with IB data.
 }
+\section{Super class}{
+\code{\link[ibrestr:IB]{ibrestr::IB}} -> \code{Utils}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
+\item \href{#method-Utils-new}{\code{Utils$new()}}
 \item \href{#method-Utils-order_result_to_html}{\code{Utils$order_result_to_html()}}
+\item \href{#method-Utils-check_gateway}{\code{Utils$check_gateway()}}
 \item \href{#method-Utils-clone}{\code{Utils$clone()}}
+}
+}
+\if{html}{\out{
+<details><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="cancel_order"><a href='../../ibrestr/html/IB.html#method-IB-cancel_order'><code>ibrestr::IB$cancel_order()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="confirm_order"><a href='../../ibrestr/html/IB.html#method-IB-confirm_order'><code>ibrestr::IB$confirm_order()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="delete"><a href='../../ibrestr/html/IB.html#method-IB-delete'><code>ibrestr::IB$delete()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get"><a href='../../ibrestr/html/IB.html#method-IB-get'><code>ibrestr::IB$get()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_conids_by_exchange"><a href='../../ibrestr/html/IB.html#method-IB-get_conids_by_exchange'><code>ibrestr::IB$get_conids_by_exchange()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_historical_data"><a href='../../ibrestr/html/IB.html#method-IB-get_historical_data'><code>ibrestr::IB$get_historical_data()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_historical_data_beta"><a href='../../ibrestr/html/IB.html#method-IB-get_historical_data_beta'><code>ibrestr::IB$get_historical_data_beta()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_order_status"><a href='../../ibrestr/html/IB.html#method-IB-get_order_status'><code>ibrestr::IB$get_order_status()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_portfolio_accounts"><a href='../../ibrestr/html/IB.html#method-IB-get_portfolio_accounts'><code>ibrestr::IB$get_portfolio_accounts()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_portfolio_subaccounts"><a href='../../ibrestr/html/IB.html#method-IB-get_portfolio_subaccounts'><code>ibrestr::IB$get_portfolio_subaccounts()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_portfolio_summary"><a href='../../ibrestr/html/IB.html#method-IB-get_portfolio_summary'><code>ibrestr::IB$get_portfolio_summary()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_position_by_conid"><a href='../../ibrestr/html/IB.html#method-IB-get_position_by_conid'><code>ibrestr::IB$get_position_by_conid()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_sec_definfo"><a href='../../ibrestr/html/IB.html#method-IB-get_sec_definfo'><code>ibrestr::IB$get_sec_definfo()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_trades"><a href='../../ibrestr/html/IB.html#method-IB-get_trades'><code>ibrestr::IB$get_trades()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="get_trading_schedule"><a href='../../ibrestr/html/IB.html#method-IB-get_trading_schedule'><code>ibrestr::IB$get_trading_schedule()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="place_and_confirm_order"><a href='../../ibrestr/html/IB.html#method-IB-place_and_confirm_order'><code>ibrestr::IB$place_and_confirm_order()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="place_order"><a href='../../ibrestr/html/IB.html#method-IB-place_order'><code>ibrestr::IB$place_order()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="post"><a href='../../ibrestr/html/IB.html#method-IB-post'><code>ibrestr::IB$post()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ibrestr" data-topic="IB" data-id="search_contract_by_symbol"><a href='../../ibrestr/html/IB.html#method-IB-search_contract_by_symbol'><code>ibrestr::IB$search_contract_by_symbol()</code></a></span></li>
+</ul>
+</details>
+}}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Utils-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Utils-new}{}}}
+\subsection{Method \code{new()}}{
+Creates a new instance of this [R6][R6::R6Class] class.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Utils$new(host, port)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{host}}{Host, by default localhost}
+
+\item{\code{port}}{Port, by default 5000}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new `Utils` object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -30,7 +82,27 @@ Performs a GET request to the specified Interactive Brokers API endpoint.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The response from the GET request.
+Html character.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Utils-check_gateway"></a>}}
+\if{latex}{\out{\hypertarget{method-Utils-check_gateway}{}}}
+\subsection{Method \code{check_gateway()}}{
+Check for errors in gateway
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Utils$check_gateway(tries = 100)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tries}}{Number of tries - number of get requests and seconds.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Boolean (error or no error).
 }
 }
 \if{html}{\out{<hr>}}
