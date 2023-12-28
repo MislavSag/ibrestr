@@ -1,9 +1,8 @@
 library(testthat)
-library(httr)
 
 
 test_that("Testing get_conids_by_exchange", {
-  ib_api <- ibrestr::IB$new(host =  "cgspaperexuber.eastus.azurecontainer.io", port = 5000)
+  ib_api = ibrestr::IB$new(host =  "cgspaperexuber.eastus.azurecontainer.io", port = 5000)
 
   # Mocking a response or using an actual response
   # For actual API calls, ensure you have a valid host and port

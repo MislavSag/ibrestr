@@ -6,9 +6,6 @@
 \description{
 Get data data from IB Client Portal API.
 }
-\references{
-\url{https://www.interactivebrokers.com/api/doc.html#tag/Market-Data/paths/~1iserver~1marketdata~1history/get}
-}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -26,12 +23,12 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-new}{\code{IB$new()}}
 \item \href{#method-IB-get}{\code{IB$get()}}
 \item \href{#method-IB-post}{\code{IB$post()}}
+\item \href{#method-IB-delete}{\code{IB$delete()}}
 \item \href{#method-IB-get_conids_by_exchange}{\code{IB$get_conids_by_exchange()}}
 \item \href{#method-IB-search_contract_by_symbol}{\code{IB$search_contract_by_symbol()}}
 \item \href{#method-IB-get_sec_definfo}{\code{IB$get_sec_definfo()}}
 \item \href{#method-IB-get_trading_schedule}{\code{IB$get_trading_schedule()}}
-\item \href{#method-IB-get_unadjusted_market}{\code{IB$get_unadjusted_market()}}
-\item \href{#method-IB-get_position}{\code{IB$get_position()}}
+\item \href{#method-IB-get_position_by_conid}{\code{IB$get_position_by_conid()}}
 \item \href{#method-IB-place_order}{\code{IB$place_order()}}
 \item \href{#method-IB-confirm_order}{\code{IB$confirm_order()}}
 \item \href{#method-IB-get_order_status}{\code{IB$get_order_status()}}
@@ -39,6 +36,9 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_historical_data_beta}{\code{IB$get_historical_data_beta()}}
 \item \href{#method-IB-get_historical_data}{\code{IB$get_historical_data()}}
 \item \href{#method-IB-cancel_order}{\code{IB$cancel_order()}}
+\item \href{#method-IB-get_trades}{\code{IB$get_trades()}}
+\item \href{#method-IB-get_portfolio_accounts}{\code{IB$get_portfolio_accounts()}}
+\item \href{#method-IB-get_portfolio_subaccounts}{\code{IB$get_portfolio_subaccounts()}}
 \item \href{#method-IB-get_portfolio_summary}{\code{IB$get_portfolio_summary()}}
 \item \href{#method-IB-clone}{\code{IB$clone()}}
 }
@@ -63,15 +63,13 @@ Create a new IB object.
 }
 \subsection{Returns}{
 A new `IB` object.
-Generic GET request method
-
-Performs a GET request to the specified Interactive Brokers API endpoint.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get}{}}}
 \subsection{Method \code{get()}}{
+Performs a GET request to the specified Interactive Brokers API endpoint.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get(endpoint = "/sso/validate", query = NULL)}\if{html}{\out{</div>}}
 }
@@ -87,15 +85,13 @@ Performs a GET request to the specified Interactive Brokers API endpoint.
 }
 \subsection{Returns}{
 The response from the GET request.
-Generic POST request method
-
-Performs a POST request to the specified Interactive Brokers API endpoint.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-post"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-post}{}}}
 \subsection{Method \code{post()}}{
+Performs a POST request to the specified Interactive Brokers API endpoint.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$post(endpoint = "/tickle", body = NULL)}\if{html}{\out{</div>}}
 }
@@ -111,16 +107,34 @@ Performs a POST request to the specified Interactive Brokers API endpoint.
 }
 \subsection{Returns}{
 The response from the POST request.
-Get all contract identifiers by exchange
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-delete"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-delete}{}}}
+\subsection{Method \code{delete()}}{
+Performs a DELETE request to the specified Interactive Brokers API endpoint.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$delete(endpoint)}\if{html}{\out{</div>}}
+}
 
-Retrieves all contracts available on a specified exchange.
-Note: This is only available for Stock contracts.
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{endpoint}}{The endpoint path for the DELETE request.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The response from the DELETE request.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_conids_by_exchange"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_conids_by_exchange}{}}}
 \subsection{Method \code{get_conids_by_exchange()}}{
+Retrieves all contracts available on a specified exchange.
+Note: This is only available for Stock contracts.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_conids_by_exchange(exchange)}\if{html}{\out{</div>}}
 }
@@ -134,16 +148,14 @@ Note: This is only available for Stock contracts.
 }
 \subsection{Returns}{
 A data frame with columns.
-Search Contract by Symbol
-
-Searches by underlying symbol or company name and relays back what derivative contract(s) it has.
-This endpoint must be called before using /secdef/info.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-search_contract_by_symbol"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-search_contract_by_symbol}{}}}
 \subsection{Method \code{search_contract_by_symbol()}}{
+Searches by underlying symbol or company name and relays back what derivative contract(s) it has.
+This endpoint must be called before using /secdef/info.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$search_contract_by_symbol(symbol, name = NULL, secType = NULL)}\if{html}{\out{</div>}}
 }
@@ -162,17 +174,15 @@ Valid values: "STK", "IND", "BOND".}
 }
 \subsection{Returns}{
 A list containing details of the contract such as conid, companyName, symbol, etc.
-Get Security Definition Information by Contract Identifier
-
-Retrieves security definition information for a given contract identifier (conid).
-This method is applicable for various security types including futures, options, warrants, cash, and CFDs.
-For derivatives, /iserver/secdef/search must be called first.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_sec_definfo"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_sec_definfo}{}}}
 \subsection{Method \code{get_sec_definfo()}}{
+Retrieves security definition information for a given contract identifier (conid).
+This method is applicable for various security types including futures, options, warrants, cash, and CFDs.
+For derivatives, /iserver/secdef/search must be called first.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_sec_definfo(
   conid,
@@ -206,15 +216,13 @@ For derivatives, /iserver/secdef/search must be called first.
 }
 \subsection{Returns}{
 A list containing details of the contract such as conid, ticker, secType, etc.
-Get Trading Schedule by Symbol
-
-Retrieves the trading schedule up to a month for the requested contract.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_trading_schedule"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_trading_schedule}{}}}
 \subsection{Method \code{get_trading_schedule()}}{
+Retrieves the trading schedule up to a month for the requested contract.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_trading_schedule(
   assetClass,
@@ -243,73 +251,33 @@ A list containing the trading schedule details.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-get_unadjusted_market"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-get_unadjusted_market}{}}}
-\subsection{Method \code{get_unadjusted_market()}}{
-Get unadjusted market data.
+\if{html}{\out{<a id="method-IB-get_position_by_conid"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_position_by_conid}{}}}
+\subsection{Method \code{get_position_by_conid()}}{
+Retrieves position details for the specified contract identifier (conid).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_unadjusted_market(
-  conid,
-  exchange = NULL,
-  period = "5d",
-  bar = "1h",
-  outsideRth = TRUE,
-  keep_nytime_10_16 = TRUE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_position_by_conid(accountId, conId)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{conid}}{Contract ID.}
+\item{\code{accountId}}{String, required, the account ID for which the position should be retrieved.}
 
-\item{\code{exchange}}{Exchange.}
-
-\item{\code{period}}{Period.}
-
-\item{\code{bar}}{Bar.}
-
-\item{\code{outsideRth}}{Data outside trading hours.}
-
-\item{\code{keep_nytime_10_16}}{If TRUE, timezone is changed to NY time and only
-trading hours kept.}
+\item{\code{conId}}{String, required, the contract ID to receive position information on.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-Data table with unadjusted market data.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-get_position"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-get_position}{}}}
-\subsection{Method \code{get_position()}}{
-Get portfolio positions.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_position(account_id, con_id)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{account_id}}{Account ID.}
-
-\item{\code{con_id}}{Contract id.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-list object with info on positions.
-Place Order
-
-Submits orders when connected to an IServer Brokerage Session.
-Supports various advanced order types and additional details.
+A list containing position details for the specified conid.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-place_order"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-place_order}{}}}
 \subsection{Method \code{place_order()}}{
+Submits orders when connected to an IServer Brokerage Session.
+Supports various advanced order types and additional details.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$place_order(accountID, orders)}\if{html}{\out{</div>}}
 }
@@ -325,15 +293,13 @@ Supports various advanced order types and additional details.
 }
 \subsection{Returns}{
 A list containing details of the order status.
-Confirm Order Reply
-
-Confirms the order reply, agreeing or declining the message to transmit or discard the order.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-confirm_order"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-confirm_order}{}}}
 \subsection{Method \code{confirm_order()}}{
+Confirms the order reply, agreeing or declining the message to transmit or discard the order.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$confirm_order(replyId, confirmed = TRUE)}\if{html}{\out{</div>}}
 }
@@ -349,15 +315,13 @@ Confirms the order reply, agreeing or declining the message to transmit or disca
 }
 \subsection{Returns}{
 A list containing details of the order confirmation.
-Get Order Status
-
-Retrieves the status of an individual order using the orderId.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_order_status"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_order_status}{}}}
 \subsection{Method \code{get_order_status()}}{
+Retrieves the status of an individual order using the orderId.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_order_status(orderId)}\if{html}{\out{</div>}}
 }
@@ -371,15 +335,13 @@ Retrieves the status of an individual order using the orderId.
 }
 \subsection{Returns}{
 A list containing details of the order status.
-Place and Confirm Order
-
-Places an order and handles the confirmation process.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-place_and_confirm_order"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-place_and_confirm_order}{}}}
 \subsection{Method \code{place_and_confirm_order()}}{
+Places an order and handles the confirmation process.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$place_and_confirm_order(accountID, orders)}\if{html}{\out{</div>}}
 }
@@ -395,15 +357,13 @@ Places an order and handles the confirmation process.
 }
 \subsection{Returns}{
 A list containing details of the order placement and confirmation.
-Get Historical Market Data Beta
-
-Retrieves a list of historical market data for a given contract identifier.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_historical_data_beta"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_historical_data_beta}{}}}
 \subsection{Method \code{get_historical_data_beta()}}{
+Retrieves a list of historical market data for a given contract identifier.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_data_beta(
   conid,
@@ -437,15 +397,13 @@ Retrieves a list of historical market data for a given contract identifier.
 }
 \subsection{Returns}{
 A list containing historical market data.
-Get Historical Market Data
-
-Retrieves historical market data for a given contract identifier.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_historical_data"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_historical_data}{}}}
 \subsection{Method \code{get_historical_data()}}{
+Retrieves historical market data for a given contract identifier.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_data(
   conid,
@@ -479,215 +437,96 @@ Retrieves historical market data for a given contract identifier.
 }
 \subsection{Returns}{
 A list containing historical market data.
-#' @description
-#' Place order.
-#'
-#' @param account_id Account ID.
-#' @param order_body Body of POST request which place order.
-#'
-#' @references \url{https://www.interactivebrokers.com/api/doc.html#tag/Order/paths/~1iserver~1account~1\%7Bacc€ountId\%7D~1orders/post}
-#' @return list object with info on positions.
-place_order = function(account_id, order_body) {
-
-  # order = function(contractid, side, quantity, coid) {
-  #   # debug
-  #   # contractid = CONTRACT_ID_BIL
-  #   # side = "SELL"
-  #   # quantity = bil_position
-  #   # coid = paste0(email_prefix, "Sell BIL CFD MANUALLY at ", Sys.time())
-  #
-  #   # ping or init sessions
-  #   print("Init sessions")
-  #   ib$ib_get()
-  #   ib$ib_post()
-  #   ib$ib_get(paste0(IB_URL, "/v1/api/iserver/accounts"))
-  #   ib$get_position(ACCOUNT_ID, CONTRACT_ID)
-  #   ib$get_portfolio_summary(ACCOUNT_ID)
-  #   Sys.sleep(1L)
-  #
-  #   # order body
-  #   print("Create body")
-  #   body = list(
-  #     acctId = ACCOUNT_ID,
-  #     conid = as.integer(contractid),
-  #     sectype = paste0(contractid, ":CFD"),
-  #     orderType = "MKT",
-  #     outsideRTH = FALSE,
-  #     side = side,
-  #     quantity = as.integer(quantity),
-  #     tif = "GTC",
-  #     cOID = ids::random_id()
-  #   )
-  #
-  #   # place orders order
-  #   print("Place order")
-  #   url <- paste0(modify_url(ib$baseurl, path = "/v1/api/iserver/account/"),
-  #                 ACCOUNT_ID, "/orders")
-  #   print(url)
-  #   body_json = toJSON(list(orders = list(body)), auto_unbox = TRUE)
-  #   print(body_json)
-  #
-  #   # POST(
-  #   #   url,
-  #   #   config = httr::config(ssl_verifypeer = FALSE,
-  #   #                         ssl_verifyhost = FALSE),
-  #   #   body = body_json,
-  #   #   add_headers(`User-Agent` = "Console", `content-type` = "application/json"), encode = "json"
-  #   # )
-  #
-  #   order_message <- ib$ib_post(url, body = body_json)
-  #   Sys.sleep(1L)
-  #   print("Reply")
-  #   print(order_message)
-  #   url <- paste0(modify_url(ib$baseurl, path = "/v1/api/iserver/reply/"),
-  #                 order_message[[1]]$id)
-  #   confirmed <- ib$ib_post(url, body = toJSON(list(confirmed = TRUE), auto_unbox = TRUE))
-  #   order_info = list(order_message = order_message, confirmed = confirmed)
-  #   # order_info = ib$buy_and_confirm(ACCOUNT_ID, body)
-  #   Sys.sleep(1L)
-  #
-  #   # check order status and wait for 5 minute if it will be executed
-  #   print("Check oders status")
-  #   n_trails = 40
-  #   repeat {
-  #     # stop if order executes or number of trias grater than 10
-  #     if (n_trails <= 0) {
-  #       send_email(sub = paste0(EMAIL_SUB, " - order problem"),
-  #                  message = "Order is not filled. Check why.")
-  #       break()
-  #     }
-  #
-  #     # get order status
-  #     url = paste0(
-  #       "https://",
-  #       parsed_iburl$hostname,
-  #       ":",
-  #       as.integer(parsed_iburl$port),
-  #       "/v1/api/iserver/account/orders"
-  #     )
-  #     orders <- ib$ib_get(url)
-  #     if (length(orders$orders) == 0) {
-  #       Sys.sleep(1L)
-  #       n_trails = n_trails - 1
-  #       next()
-  #     } else {
-  #       last_ = lapply(orders$orders, '[', "lastExecutionTime")
-  #       last_ = as.POSIXct(unlist(last_), format = "%y%m%d%H%M%S")
-  #       orders_last = orders$orders[which.max(last_)]
-  #       order_status = orders_last[[1]]$status
-  #
-  #       # check order status
-  #       if (order_status == "Filled") {
-  #         # send e-mail notification
-  #         confirmed = order_info$confirmed
-  #         if (length(confirmed) == 0) {
-  #           send_email(sub = EMAIL_SUB,
-  #                      message = "Order is not confirmed")
-  #         } else {
-  #           # Convert the list to an HTML formatted string
-  #           my_list = orders_last[[1]]
-  #           html_content <- "<html><body><h2>Order Details</h2><ul>"
-  #           for (name in names(my_list)) {
-  #             html_content <- paste0(html_content, "<li><b>", name, ":</b> ", my_list[[name]], "</li>")
-  #           }
-  #           html_content <- paste0(html_content, "</ul></body></html>")
-  #
-  #           # Send email
-  #           send_email(
-  #             sub = EMAIL_SUB,
-  #             message = html_content,
-  #             html = TRUE
-  #           )
-  #         }
-  #         break
-  #       } else {
-  #         Sys.sleep(1L)
-  #         n_trails = n_trails - 1
-  #       }
-  #     }
-  #   }
-  #   return(1L)
-  #
-  #   # cancel order
-  #   # url = paste0("https://", parsed_iburl$hostname, ":", as.integer(parsed_iburl$port),
-  #   #              "/v1/api/iserver/account/", ACCOUNT_ID,
-  #   #              "/order/", orders$orders[[2]]$orderId)
-  #   # DELETE(url, config = httr::config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE))
-  # }
-
-  # place order
-  url <- paste0(modify_url(self$baseurl, path = "/v1/api/iserver/account/"),
-                account_id,
-                "/orders")
-  body_json = toJSON(list(orders = list(order_body)), auto_unbox = TRUE)
-  order_message <- self$ib_post(url, body = body_json)
-
-  # wait for 1 sec for order to be sent. Probably not necessary
-  Sys.sleep(1L)
-
-  # confirm order
-  url <- paste0(modify_url(self$baseurl, path = "/v1/api/iserver/reply/"),
-                order_message[[1]]$id)
-  confirmed <- self$ib_post(url,
-                            body = toJSON(list(confirmed = TRUE),
-                                          auto_unbox = TRUE))
-  return(list(order_message = order_message, confirmed = confirmed))
-},
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-cancel_order"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-cancel_order}{}}}
 \subsection{Method \code{cancel_order()}}{
-Cancel order.
+Cancels an open order for the specified account and order ID.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$cancel_order(account_id, order_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$cancel_order(accountId, orderId)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{account_id}}{Account ID.}
+\item{\code{accountId}}{String, required, the account ID for which the order should be canceled.}
 
-\item{\code{order_id}}{Order id from Place orders endpoint result.}
+\item{\code{orderId}}{String, required, the order ID that should be canceled.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-list object with info on positions.
+A list containing the confirmation of the cancellation request.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_trades"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_trades}{}}}
+\subsection{Method \code{get_trades()}}{
+Retrieves a list of trades for the currently selected account for the current day and six previous days.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_trades(days = NULL, accountId = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{days}}{String, optional, specify the number of days to receive executions for, up to a maximum of 7 days.}
+
+\item{\code{accountId}}{String, optional, include a specific account identifier or allocation group to retrieve trades for.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing details of trades.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_portfolio_accounts"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_portfolio_accounts}{}}}
+\subsection{Method \code{get_portfolio_accounts()}}{
+Retrieves a list of accounts for which the user can view position and account information.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_accounts()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A list containing details of portfolio accounts.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_portfolio_subaccounts"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_portfolio_subaccounts}{}}}
+\subsection{Method \code{get_portfolio_subaccounts()}}{
+Retrieves a list of sub-accounts for which the user can view position and account-related information.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_subaccounts()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A list containing details of portfolio subaccounts.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_portfolio_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_portfolio_summary}{}}}
 \subsection{Method \code{get_portfolio_summary()}}{
-Portfolio summary.
+Retrieves information regarding settled cash, cash balances, etc., in the account’s base currency and other cash balances held in other currencies.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_summary(account_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_summary(accountId)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{account_id}}{Account ID.}
+\item{\code{accountId}}{String, required, specify the account ID for which you require ledger information.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-list object with info on podrtfolio summary.
-#' @description
-#' Get contract id by symbol.
-#'
-#' @param account_id Account ID.
-#'
-#' @return list object with info on podrtfolio summary.
-get_portfolio_summary = function(account_id) {
-  url <- modify_url(self$baseurl, path = "v1/api/portfolio/"),
-                account_id,
-                "/summary"))
-  positions <- self$ib_get(url)
-  return(positions)
-}
+A list containing details of the portfolio summary.
 }
 }
 \if{html}{\out{<hr>}}
