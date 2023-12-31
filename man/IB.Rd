@@ -14,6 +14,10 @@ Get data data from IB Client Portal API.
 \item{\code{port}}{Port, by default 5000}
 
 \item{\code{base_url}}{Base url}
+
+\item{\code{strategy_name}}{Strategy name, optional.}
+
+\item{\code{email_config}}{Configuration for email notifications.}
 }
 \if{html}{\out{</div>}}
 }
@@ -24,22 +28,31 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get}{\code{IB$get()}}
 \item \href{#method-IB-post}{\code{IB$post()}}
 \item \href{#method-IB-delete}{\code{IB$delete()}}
+\item \href{#method-IB-send_email}{\code{IB$send_email()}}
 \item \href{#method-IB-get_conids_by_exchange}{\code{IB$get_conids_by_exchange()}}
 \item \href{#method-IB-search_contract_by_symbol}{\code{IB$search_contract_by_symbol()}}
 \item \href{#method-IB-get_sec_definfo}{\code{IB$get_sec_definfo()}}
 \item \href{#method-IB-get_trading_schedule}{\code{IB$get_trading_schedule()}}
-\item \href{#method-IB-get_position_by_conid}{\code{IB$get_position_by_conid()}}
 \item \href{#method-IB-place_order}{\code{IB$place_order()}}
 \item \href{#method-IB-confirm_order}{\code{IB$confirm_order()}}
-\item \href{#method-IB-get_order_status}{\code{IB$get_order_status()}}
 \item \href{#method-IB-place_and_confirm_order}{\code{IB$place_and_confirm_order()}}
+\item \href{#method-IB-cancel_order}{\code{IB$cancel_order()}}
+\item \href{#method-IB-get_live_orders}{\code{IB$get_live_orders()}}
+\item \href{#method-IB-get_order_status}{\code{IB$get_order_status()}}
+\item \href{#method-IB-get_order_status_repeated}{\code{IB$get_order_status_repeated()}}
+\item \href{#method-IB-get_trades}{\code{IB$get_trades()}}
+\item \href{#method-IB-get_market_data_snapshot}{\code{IB$get_market_data_snapshot()}}
 \item \href{#method-IB-get_historical_data_beta}{\code{IB$get_historical_data_beta()}}
 \item \href{#method-IB-get_historical_data}{\code{IB$get_historical_data()}}
-\item \href{#method-IB-cancel_order}{\code{IB$cancel_order()}}
-\item \href{#method-IB-get_trades}{\code{IB$get_trades()}}
 \item \href{#method-IB-get_portfolio_accounts}{\code{IB$get_portfolio_accounts()}}
 \item \href{#method-IB-get_portfolio_subaccounts}{\code{IB$get_portfolio_subaccounts()}}
 \item \href{#method-IB-get_portfolio_summary}{\code{IB$get_portfolio_summary()}}
+\item \href{#method-IB-get_account_positions}{\code{IB$get_account_positions()}}
+\item \href{#method-IB-get_position_by_conid}{\code{IB$get_position_by_conid()}}
+\item \href{#method-IB-check_gateway}{\code{IB$check_gateway()}}
+\item \href{#method-IB-order_result_to_html}{\code{IB$order_result_to_html()}}
+\item \href{#method-IB-set_holdings}{\code{IB$set_holdings()}}
+\item \href{#method-IB-liquidate}{\code{IB$liquidate()}}
 \item \href{#method-IB-clone}{\code{IB$clone()}}
 }
 }
@@ -47,9 +60,18 @@ Get data data from IB Client Portal API.
 \if{html}{\out{<a id="method-IB-new"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-new}{}}}
 \subsection{Method \code{new()}}{
+List containing email configuration details. Includes fields for SMTP settings and email addresses.
+Required elements: email_from, email_to, smtp_host, smtp_port, smtp_user, smtp_password.
+
+
 Create a new IB object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$new(host = "localhost", port = 5000L)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$new(
+  host = "localhost",
+  port = 5000L,
+  strategy_name = NULL,
+  email_config = list()
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -58,6 +80,13 @@ Create a new IB object.
 \item{\code{host}}{Host, by default localhost}
 
 \item{\code{port}}{Port, by default 5000}
+
+\item{\code{strategy_name}}{Strategy name, optional.}
+
+\item{\code{email_config}}{List containing email configuration details.
+Includes fields for SMTP settings and email addresses.
+Required elements: email_from, email_to,
+smtp_host, smtp_port, smtp_user, smtp_password.}
 }
 \if{html}{\out{</div>}}
 }
@@ -127,6 +156,27 @@ Performs a DELETE request to the specified Interactive Brokers API endpoint.
 }
 \subsection{Returns}{
 The response from the DELETE request.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-send_email"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-send_email}{}}}
+\subsection{Method \code{send_email()}}{
+Sends an email notification.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$send_email(subject, body, html = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{subject}}{The subject of the email.}
+
+\item{\code{body}}{The body content of the email.}
+
+\item{\code{html}}{Boolean indicating if the body content is HTML. Defaults to FALSE.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -251,28 +301,6 @@ A list containing the trading schedule details.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-get_position_by_conid"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-get_position_by_conid}{}}}
-\subsection{Method \code{get_position_by_conid()}}{
-Retrieves position details for the specified contract identifier (conid).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_position_by_conid(accountId, conId)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{accountId}}{String, required, the account ID for which the position should be retrieved.}
-
-\item{\code{conId}}{String, required, the contract ID to receive position information on.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list containing position details for the specified conid.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-place_order"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-place_order}{}}}
 \subsection{Method \code{place_order()}}{
@@ -318,6 +346,74 @@ A list containing details of the order confirmation.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-place_and_confirm_order"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-place_and_confirm_order}{}}}
+\subsection{Method \code{place_and_confirm_order()}}{
+Places an order and handles the confirmation process.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$place_and_confirm_order(accountID, orders)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accountID}}{String, required, the account ID for which the order should be placed.}
+
+\item{\code{orders}}{Array of Objects, required, used to specify the order content.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing details of the order placement and confirmation.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-cancel_order"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-cancel_order}{}}}
+\subsection{Method \code{cancel_order()}}{
+Cancels an open order for the specified account and order ID.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$cancel_order(accountId, orderId)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accountId}}{String, required, the account ID for which the order should be canceled.}
+
+\item{\code{orderId}}{String, required, the order ID that should be canceled.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing the confirmation of the cancellation request.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_live_orders"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_live_orders}{}}}
+\subsection{Method \code{get_live_orders()}}{
+Retrieves a list of live orders (cancelled, filled, submitted) for the given account.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_live_orders(filters = NULL, force = NULL, accountId = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{filters}}{String, optional, filter orders by a unique status value (separated by commas for multiple filters).}
+
+\item{\code{force}}{Boolean, optional, force the system to clear saved information and make a fresh request for orders.}
+
+\item{\code{accountId}}{String, optional, for linked accounts, view orders on specified sub-accounts.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing details of live orders.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_order_status"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_order_status}{}}}
 \subsection{Method \code{get_order_status()}}{
@@ -338,25 +434,69 @@ A list containing details of the order status.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-place_and_confirm_order"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-place_and_confirm_order}{}}}
-\subsection{Method \code{place_and_confirm_order()}}{
-Places an order and handles the confirmation process.
+\if{html}{\out{<a id="method-IB-get_order_status_repeated"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_order_status_repeated}{}}}
+\subsection{Method \code{get_order_status_repeated()}}{
+Retrieves the status of an individual order using the orderId and checks repeatedly for a specified duration.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$place_and_confirm_order(accountID, orders)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_order_status_repeated(orderId, n)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountID}}{String, required, the account ID for which the order should be placed.}
+\item{\code{orderId}}{String, required, order identifier for the placed order.}
 
-\item{\code{orders}}{Array of Objects, required, used to specify the order content.}
+\item{\code{n}}{Integer, required, number of seconds to keep checking the order status.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A list containing details of the order placement and confirmation.
+Integer, 1L if the order status is 'filled' within the specified time, otherwise 0L.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_trades"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_trades}{}}}
+\subsection{Method \code{get_trades()}}{
+Retrieves a list of trades for the currently selected account for the current day and six previous days.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_trades(days = NULL, accountId = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{days}}{String, optional, specify the number of days to receive executions for, up to a maximum of 7 days.}
+
+\item{\code{accountId}}{String, optional, include a specific account identifier or allocation group to retrieve trades for.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing details of trades.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_market_data_snapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_market_data_snapshot}{}}}
+\subsection{Method \code{get_market_data_snapshot()}}{
+Retrieves market data for the given contract identifiers.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_market_data_snapshot(conids, fields)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{conids}}{String, required, comma-separated contract identifiers.}
+
+\item{\code{fields}}{String, required, comma-separated series of field ids.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing market data for the specified contracts.
 }
 }
 \if{html}{\out{<hr>}}
@@ -440,50 +580,6 @@ A list containing historical market data.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-cancel_order"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-cancel_order}{}}}
-\subsection{Method \code{cancel_order()}}{
-Cancels an open order for the specified account and order ID.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$cancel_order(accountId, orderId)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{accountId}}{String, required, the account ID for which the order should be canceled.}
-
-\item{\code{orderId}}{String, required, the order ID that should be canceled.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list containing the confirmation of the cancellation request.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-get_trades"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-get_trades}{}}}
-\subsection{Method \code{get_trades()}}{
-Retrieves a list of trades for the currently selected account for the current day and six previous days.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_trades(days = NULL, accountId = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{days}}{String, optional, specify the number of days to receive executions for, up to a maximum of 7 days.}
-
-\item{\code{accountId}}{String, optional, include a specific account identifier or allocation group to retrieve trades for.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list containing details of trades.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-IB-get_portfolio_accounts"></a>}}
 \if{latex}{\out{\hypertarget{method-IB-get_portfolio_accounts}{}}}
 \subsection{Method \code{get_portfolio_accounts()}}{
@@ -527,6 +623,167 @@ Retrieves information regarding settled cash, cash balances, etc., in the accoun
 }
 \subsection{Returns}{
 A list containing details of the portfolio summary.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_account_positions"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_account_positions}{}}}
+\subsection{Method \code{get_account_positions()}}{
+Retrieves a list of positions for the given account with pagination support.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_account_positions(
+  accountId,
+  pageId,
+  model = NULL,
+  sort = NULL,
+  direction = NULL,
+  period = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accountId}}{String, required, the account ID for which positions should be retrieved.}
+
+\item{\code{pageId}}{String, required, the "page" of positions to be returned (pagination starts at 0).}
+
+\item{\code{model}}{String, optional, code for the model portfolio to compare against.}
+
+\item{\code{sort}}{String, optional, declare the table to be sorted by which column.}
+
+\item{\code{direction}}{String, optional, the order to sort by ('a' for ascending, 'd' for descending).}
+
+\item{\code{period}}{String, optional, period for PnL column (e.g., 1D, 7D, 1M).}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing details of positions for the specified account and page.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_position_by_conid"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_position_by_conid}{}}}
+\subsection{Method \code{get_position_by_conid()}}{
+Retrieves position details for the specified contract identifier (conid).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_position_by_conid(accountId, conId)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accountId}}{String, required, the account ID for which the position should be retrieved.}
+
+\item{\code{conId}}{String, required, the contract ID to receive position information on.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing position details for the specified conid.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-check_gateway"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-check_gateway}{}}}
+\subsection{Method \code{check_gateway()}}{
+Check for errors in gateway
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$check_gateway(tries = 100)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tries}}{Number of tries - number of get requests and seconds.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Boolean (error or no error).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-order_result_to_html"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-order_result_to_html}{}}}
+\subsection{Method \code{order_result_to_html()}}{
+Performs a GET request to the specified Interactive Brokers API endpoint.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$order_result_to_html(order)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{order}}{Filled order response}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Html character.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-set_holdings"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-set_holdings}{}}}
+\subsection{Method \code{set_holdings()}}{
+Performs a GET request to the specified Interactive Brokers API endpoint.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$set_holdings(accountId, symbol, sectype, side, tif, weight)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accountId}}{String, required, the account ID for which the order should be placed.}
+
+\item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
+
+\item{\code{sectype}}{String, required, security type of the requested contract.}
+
+\item{\code{side}}{String, required, Valid Values: SELL or BUY.}
+
+\item{\code{tif}}{String, required, The Time-In-Force determines how long the order remains active on the market.
+Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).}
+
+\item{\code{weight}}{Numeric, required, portfolio weight.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+It can return string if error or order info if everything is as expected.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-liquidate"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-liquidate}{}}}
+\subsection{Method \code{liquidate()}}{
+Liquidate all positions by symbol.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$liquidate(accountId, symbol, sectype)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accountId}}{String, required, the account ID for which the order should be placed.}
+
+\item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
+
+\item{\code{sectype}}{String, required, security type of the requested contract.}
+
+\item{\code{side}}{String, required, Valid Values: SELL or BUY.}
+
+\item{\code{tif}}{String, required, The Time-In-Force determines how long the order remains active on the market.
+Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).}
+
+\item{\code{weight}}{Numeric, required, portfolio weight.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+It can return string if error or order info if everything is as expected.
 }
 }
 \if{html}{\out{<hr>}}

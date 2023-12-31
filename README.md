@@ -9,3 +9,13 @@ You can install the development version from GitHub with:
 ```R
 # install.packages("devtools")
 devtools::install_github("your-github-username/IBClientPortal")
+```
+
+## Usage
+
+Load the package and create an instance of the IB class:
+
+```R
+library(IBClientPortal)
+ib <- IB$new(host = "localhost", port = 5000)
+```

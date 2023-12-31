@@ -1,25 +1,33 @@
 Package: ibrestr
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Interactive Brokers Rest API
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Mislav Sagovac
+Maintainer: Mislav Sagovac <mislav.sagovac@contentio.biz>
+Description: This R package provides a comprehensive R6 class-based interface 
+    to the Interactive Brokers Client Portal API. It allows users to perform a 
+    variety of operations such as trading, monitoring, and managing their 
+    Interactive Brokers account directly from R. Key functionalities include 
+    retrieving market data, executing and managing trades, handling portfolios, 
+    and configuring email notifications for trading activities. The package 
+    ensures secure communication with the API and is designed to facilitate easy
+    integration for automated trading and financial analysis within the R environment.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+SystemRequirements:	Java
 Imports: 
   R6,
   data.table,
   httr,
-  jsonlite
+  jsonlite,
+  checkmate,
+  mailR
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 RoxygenNote: 7.2.3
 Collate: 
     'IB.R'
-    'Utils.R'
     'test.R'
     'zzz.R'

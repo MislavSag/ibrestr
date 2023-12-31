@@ -4,7 +4,7 @@
 \name{ibrestr-package}
 \alias{ibrestr}
 \alias{ibrestr-package}
-\title{ibrestr: What the Package Does (Title Case)}
+\title{ibrestr: Interactive Brokers Rest API}
 \description{
-More about what it does (maybe more than one line) Use four spaces when indenting paragraphs within the Description.
+This R package provides a comprehensive R6 class-based interface to the Interactive Brokers Client Portal API. It allows users to perform a variety of operations such as trading, monitoring, and managing their Interactive Brokers account directly from R. Key functionalities include retrieving market data, executing and managing trades, handling portfolios, and configuring email notifications for trading activities. The package ensures secure communication with the API and is designed to facilitate easy integration for automated trading and financial analysis within the R environment.
 }
