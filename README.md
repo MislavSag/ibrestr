@@ -19,3 +19,30 @@ Load the package and create an instance of the IB class:
 library(IBClientPortal)
 ib <- IB$new(host = "localhost", port = 5000)
 ```
+
+## Fetch Market Data
+```R
+market_data <- ib$get_market_data_snapshot(conids = "conid", fields = "fields")
+```
+
+## Manage Orders
+```R
+order_response <- ib$place_order(accountID = "your_account_id", orders = your_order_list)
+
+```
+
+## Get Portfolio Summary
+```R
+portfolio_summary <- ib$get_portfolio_summary(accountId = "your_account_id")
+
+```
+
+## Features
+
+- Trade execution and management.
+- Real-time and historical market data retrieval.
+- Portfolio management functionalities.
+- Email notifications for trade activities.
+- Secure API connection handling.
+
+
