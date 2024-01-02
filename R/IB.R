@@ -126,7 +126,7 @@ IB = R6::R6Class(
         send.mail(
           from = self$email_config$email_from,
           to = self$email_config$email_to,
-          subject = paste0(toupper(selfstrategy_name), " - ", subject),
+          subject = paste0(toupper(self$strategy_name), " - ", subject),
           body = body,
           encoding = "utf-8",
           smtp = list(
@@ -238,7 +238,7 @@ IB = R6::R6Class(
     #' @return A list containing details of the order confirmation.
     confirm_order = function(replyId, confirmed = TRUE) {
       endpoint <- sprintf("/iserver/reply/%s", replyId)
-      body <- list(confirmed = confirmed)
+      body <- toJSON(list(confirmed = confirmed), auto_unbox = TRUE)
       self$post(endpoint, body = body)
     },
 
@@ -255,15 +255,16 @@ IB = R6::R6Class(
       if (length(placed_order) > 0) {
         if (!is.null(placed_order[[1]]$order_id)) {
           # Standard Order Response - order placed successfully without warnings
-          return(list(order = placed_order, confirmation = "Order placed successfully"))
+          return(list(order = placed_order, info = "Order placed successfully"))
         } else if (!is.null(placed_order[[1]]$id)) {
           # Alternate Response Object - order requires confirmation due to a warning
-          replyId <- placed_order$id
-          confirmation <- self$confirmOrder(replyId, confirmed = TRUE) # toJSON(list(confirmed = TRUE), auto_unbox = TRUE)
-          return(list(order = placed_order, confirmation = confirmation))
+          print("Alternate Response Object - order requires confirmation")
+          replyId <- placed_order[[1]]$id[[1]]
+          confirmation <- self$confirm_order(replyId, confirmed = TRUE)
+          return(list(order = confirmation, info = "Confirmation"))
         } else if (!is.null(placed_order$error)) {
           # Order Reject Object - order was rejected
-          return(list(order = placed_order, confirmation = "Order rejected", error = placed_order$error))
+          return(list(order = placed_order, info = "Order rejected", error = placed_order$error))
         } else {
           return("Unexpected response received from the order placement.")
         }
@@ -540,7 +541,7 @@ IB = R6::R6Class(
 
       # find conid for sectype
       print("Find conid by symbol for sectype")
-      contract = self$get_sec_definfo(con_stk, "CFD")
+      contract = self$get_sec_definfo(conid_stk, "CFD")
       conid = contract[[1]]$conid
       cat("Conid ", conid, "\n")
 
@@ -568,7 +569,7 @@ IB = R6::R6Class(
       # get available cash
       print("Available cash")
       portfolio_summary = self$get_portfolio_summary(accountId)
-      cash <- portfolio_summary$totalcashvalue$amount
+      cash = portfolio_summary$totalcashvalue$amount
       cat("Cash ", cash, "\n")
 
       # order body
@@ -585,8 +586,8 @@ IB = R6::R6Class(
         if (length(p) == 0) {
           return("No data in FMP cloud.")
         }
-        price <- p[[1]]$price
-        quantity <- floor((cash * weight) / price)
+        price = p[[1]]$price
+        quantity = floor((cash * weight) / price)
 
         # order body
         body = list(
@@ -620,14 +621,21 @@ IB = R6::R6Class(
       print(placed_order)
 
       # check order
-      if (is.null(order$order[[1]]$order_id)) {
+      if (is.null(placed_order$order[[1]]$order_id)) {
+        print("There is no order id in placed_order return object")
         return(placed_order)
-      }
-
-      # check status
-      status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
-      if (status == 0) {
-        return("Status is not filled")
+      } else {
+        print("Check status")
+        status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
+        if (status == 0) {
+          # notify
+          if (length(self$email_config) >= 6) {
+            self$send_email("Order status not filled",
+                            "Status is not filled",
+                            html = FALSE)
+          }
+          return("Status is not filled")
+        }
       }
 
       # notify
@@ -652,6 +660,20 @@ IB = R6::R6Class(
     #' @param weight Numeric, required, portfolio weight.
     #' @return It can return string if error or order info if everything is as expected.
     liquidate = function(accountId, symbol, sectype) {
+      # debug
+      # accountId = "DU8203010"
+      # symbol = "SPY"
+      # sectype = "CFD"
+      # host = "cgspaperexuber.eastus.azurecontainer.io"
+      # port = 5000
+      # strategy_name = "Exuber 2"
+      # self = IB$new(
+      #   host = host,
+      #   port = port,
+      #   strategy_name = strategy_name,
+      #   email_config = NULL
+      # )
+
       # checks
       assert_string(accountId)
       assert_string(symbol)
@@ -664,14 +686,14 @@ IB = R6::R6Class(
 
       # find conid for sectype
       print("Find conid by symbol for sectype")
-      contract = self$get_sec_definfo(con_stk, "CFD")
+      contract = self$get_sec_definfo(conid_stk, "CFD")
       conid = contract[[1]]$conid
       cat("Conid ", conid, "\n")
 
       # check if gateway is ready
       print("Check gateway")
       test_ib = self$check_gateway()
-      if (!test_ib) return("Check gateway didn't pass.")
+      if (!test_ib) return("Check gateway - didn't pass.")
 
       # check if account id is in accounts
       print("Checks accounts")
@@ -711,17 +733,26 @@ IB = R6::R6Class(
       print(placed_order)
 
       # place order, confirm and heck status
-      if (is.null(order$order[[1]]$order_id)) {
+      if (is.null(placed_order$order[[1]]$order_id)) {
+        print("There is no order id in placed_order return object")
         return(placed_order)
       } else {
+        print("Check status")
         status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
         if (status == 0) {
+          # notify
+          if (length(self$email_config) >= 6) {
+            self$send_email("Order status not filled",
+                            "Status is not filled",
+                            html = FALSE)
+          }
           return("Status is not filled")
         }
       }
 
       # notify
       if (length(self$email_config) >= 6) {
+        print("Notification - send email")
         self$send_email("Order with Liquidate",
                         self$order_result_to_html(placed_order$order[[1]]),
                         html = TRUE)
