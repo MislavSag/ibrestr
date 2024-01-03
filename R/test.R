@@ -81,6 +81,14 @@
 #                              origin = "1970-01-01",
 #                              tz = "America/New_York")]
 #
+# # portfolio performance
+# x = ib$get_account_performance("DU8203010", "Q")
+# x$nav$data
+#
+# # portfolio transactions
+# x = ib$get_transaction_history("DU8203010", 134770228, "USD")
+# x$transactions
+#
 #
 # # TEST API ----------------------------------------------------------------
 # library(httr)
@@ -96,7 +104,7 @@
 # # post liquidate
 # data <- list(
 #   accountId = "DU8203010",
-#   symbol = "BIL",
+#   symbol = "AAPL",
 #   sectype = "CFD",
 #   host = "cgspaperexuber.eastus.azurecontainer.io",
 #   port = 5000,
@@ -137,4 +145,4 @@
 # response <- POST("http://localhost:8080/set_holdings", body = data, encode = "json")
 # p = content(response)
 # p
-# p$order[[1]]$id[[1]]
+#

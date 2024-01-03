@@ -49,6 +49,8 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_portfolio_summary}{\code{IB$get_portfolio_summary()}}
 \item \href{#method-IB-get_account_positions}{\code{IB$get_account_positions()}}
 \item \href{#method-IB-get_position_by_conid}{\code{IB$get_position_by_conid()}}
+\item \href{#method-IB-get_account_performance}{\code{IB$get_account_performance()}}
+\item \href{#method-IB-get_transaction_history}{\code{IB$get_transaction_history()}}
 \item \href{#method-IB-check_gateway}{\code{IB$check_gateway()}}
 \item \href{#method-IB-order_result_to_html}{\code{IB$order_result_to_html()}}
 \item \href{#method-IB-set_holdings}{\code{IB$set_holdings()}}
@@ -682,6 +684,55 @@ Retrieves position details for the specified contract identifier (conid).
 }
 \subsection{Returns}{
 A list containing position details for the specified conid.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_account_performance"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_account_performance}{}}}
+\subsection{Method \code{get_account_performance()}}{
+Retrieves account performance (MTM) for the specified accounts.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_account_performance(acctIds, freq = "D")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{acctIds}}{Array of Strings, required, account IDs to receive data for.}
+
+\item{\code{freq}}{String, required, frequency for analysis.
+Available Values: "D" (Daily), "M" (Monthly), "Q" (Quarterly).}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing the account performance data.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_transaction_history"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_transaction_history}{}}}
+\subsection{Method \code{get_transaction_history()}}{
+Retrieves transaction history for specified account IDs and contract IDs.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_transaction_history(acctIds, conids, currency, days = 90)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{acctIds}}{Array of Strings, required, account IDs to receive data for.}
+
+\item{\code{conids}}{Array of Integers, required, contract IDs to receive data for.}
+
+\item{\code{currency}}{String, required, currency for displaying amounts.}
+
+\item{\code{days}}{Integer, optional, number of days for transaction data.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing the transaction history data.
 }
 }
 \if{html}{\out{<hr>}}
