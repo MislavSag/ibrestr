@@ -89,7 +89,7 @@
         response <- RETRY(
           "POST",
           url,
-          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE, timeout = 15s),
+          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE, timeout = 15),
           body = body,
           add_headers('User-Agent' = 'Console', 'content-type' = 'application/json'),
           encode = "json",
