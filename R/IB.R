@@ -71,7 +71,7 @@
         response <- RETRY(
           "GET",
           url,
-          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE),
+          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE, timeout = 15),
           query = query,
           times = 5L
         )
@@ -89,7 +89,7 @@
         response <- RETRY(
           "POST",
           url,
-          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE),
+          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE, timeout = 15s),
           body = body,
           add_headers('User-Agent' = 'Console', 'content-type' = 'application/json'),
           encode = "json",
@@ -109,7 +109,7 @@
         response <- RETRY(
           "DELETE",
           url,
-          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE),
+          config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE, timeout = 15),
           times = 5L
         )
         content(response)
