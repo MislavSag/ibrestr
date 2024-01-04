@@ -29,5 +29,4 @@ Config/testthat/edition: 3
 RoxygenNote: 7.2.3
 Collate: 
     'IB.R'
-    'test.R'
     'zzz.R'
