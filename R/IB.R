@@ -317,9 +317,9 @@
       #' @return Integer, 1L if the order status is 'filled' within the specified time, otherwise 0L.
       get_order_status_repeated = function(orderId, n) {
         for (i in 1:n) {
-          status_response <- self$get_order_status(orderId)
+          status_response = self$get_order_status(orderId)
           if (length(status_response) > 0 && status_response$order_status == "Filled") {
-            return(1L)
+            return(status_response)
           }
           Sys.sleep(1)  # Wait for 1 second before next check
         }
@@ -682,7 +682,7 @@
         } else {
           print("Check status")
           status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
-          if (status == 0) {
+          if (is.integer(status) && status == 0) {
             # notify
             if (length(self$email_config) >= 6) {
               self$send_email("Order status not filled",
@@ -695,8 +695,9 @@
 
         # notify
         if (length(self$email_config) >= 6) {
+          print("Notification - send email")
           self$send_email("Order with Set Holdings",
-                          self$order_result_to_html(status$orders[[1]]),
+                          self$order_result_to_html(status),
                           html = TRUE)
         }
 
@@ -717,7 +718,7 @@
       liquidate = function(accountId, symbol, sectype) {
         # debug
         # accountId = "DU8203010"
-        # symbol = "SPY"
+        # symbol = "AAPL"
         # sectype = "CFD"
         # host = "cgspaperexuber.eastus.azurecontainer.io"
         # port = 5000
@@ -794,7 +795,7 @@
         } else {
           print("Check status")
           status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
-          if (status == 0) {
+          if (is.integer(status) && status == 0) {
             # notify
             if (length(self$email_config) >= 6) {
               self$send_email("Order status not filled",
@@ -809,7 +810,7 @@
         if (length(self$email_config) >= 6) {
           print("Notification - send email")
           self$send_email("Order with Liquidate",
-                          self$order_result_to_html(status$orders[[1]]),
+                          self$order_result_to_html(status),
                           html = TRUE)
         }
         return(placed_order)
