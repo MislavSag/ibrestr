@@ -194,6 +194,24 @@
       },
 
       #' @description
+      #' Retrieves stock contracts for given symbol(s).
+      #'
+      #' @param symbols String, required, comma-separated list of stock symbols.
+      #'        Symbols must contain only capitalized letters.
+      #' @return A list containing details of stock contracts.
+      get_stocks_by_symbol = function(symbols) {
+        if (is.null(symbols) || symbols == "") {
+          stop("Symbols parameter is required and cannot be empty.")
+        }
+        # Construct query
+        query = list(symbols = symbols)
+
+        # Perform GET request
+        response = self$get("/trsrv/stocks", query = query)
+        return(response)
+      },
+
+      #' @description
       #' Retrieves the trading schedule up to a month for the requested contract.
       #'
       #' @param assetClass String, required, security type of the given contract.
@@ -589,21 +607,28 @@
         assert_choice(tif, c("GTC", "OPG", "DAY", "IOC", "PAX"))
         assert_number(weight, lower = 0, upper = 10) # max leverage X 10
 
+        # check if gateway is ready
+        print("Check gateway")
+        test_ib = self$check_gateway()
+        if (!test_ib) return("Check gateway didn't pass.")
+
         # find con id by symbol
-        print("Find conid by symbol for STK")
-        contract_stk = self$search_contract_by_symbol(symbol)
-        conid_stk = contract_stk[[1]]$conid
+        conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
+        print(conids)
+        tries = 0
+        while (is.null(conids) & tries < 10) {
+          conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
+          Sys.sleep(0.5)
+          tries = tries + 1
+        }
+        if (is.null(conids)) return("Can't get data for STK ids")
+        conid_stk = conids[ticker == symbol, conid]
 
         # find conid for sectype
         print("Find conid by symbol for sectype")
         contract = self$get_sec_definfo(conid_stk, "CFD")
         conid = contract[[1]]$conid
         cat("Conid ", conid, "\n")
-
-        # check if gateway is ready
-        print("Check gateway")
-        test_ib = self$check_gateway()
-        if (!test_ib) return("Check gateway didn't pass.")
 
         # check if account id is in accounts
         print("Checks accounts")
@@ -735,21 +760,28 @@
         assert_string(symbol)
         assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
 
+        # check if gateway is ready
+        print("Check gateway")
+        test_ib = self$check_gateway()
+        if (!test_ib) return("Check gateway didn't pass.")
+
         # find con id by symbol
-        print("Find conid by symbol for STK")
-        contract_stk = self$search_contract_by_symbol(symbol)
-        conid_stk = contract_stk[[1]]$conid
+        conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
+        tries = 0
+        print(conids)
+        while (is.null(conids) & tries < 10) {
+          conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
+          Sys.sleep(0.5)
+          tries = tries + 1
+        }
+        if (is.null(conids)) return("Can't get data for STK ids")
+        conid_stk = conids[ticker == symbol, conid]
 
         # find conid for sectype
         print("Find conid by symbol for sectype")
         contract = self$get_sec_definfo(conid_stk, "CFD")
         conid = contract[[1]]$conid
         cat("Conid ", conid, "\n")
-
-        # check if gateway is ready
-        print("Check gateway")
-        test_ib = self$check_gateway()
-        if (!test_ib) return("Check gateway - didn't pass.")
 
         # check if account id is in accounts
         print("Checks accounts")

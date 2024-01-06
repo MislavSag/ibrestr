@@ -32,6 +32,7 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_conids_by_exchange}{\code{IB$get_conids_by_exchange()}}
 \item \href{#method-IB-search_contract_by_symbol}{\code{IB$search_contract_by_symbol()}}
 \item \href{#method-IB-get_sec_definfo}{\code{IB$get_sec_definfo()}}
+\item \href{#method-IB-get_stocks_by_symbol}{\code{IB$get_stocks_by_symbol()}}
 \item \href{#method-IB-get_trading_schedule}{\code{IB$get_trading_schedule()}}
 \item \href{#method-IB-place_order}{\code{IB$place_order()}}
 \item \href{#method-IB-confirm_order}{\code{IB$confirm_order()}}
@@ -268,6 +269,27 @@ For derivatives, /iserver/secdef/search must be called first.
 }
 \subsection{Returns}{
 A list containing details of the contract such as conid, ticker, secType, etc.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_stocks_by_symbol"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_stocks_by_symbol}{}}}
+\subsection{Method \code{get_stocks_by_symbol()}}{
+Retrieves stock contracts for given symbol(s).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_stocks_by_symbol(symbols)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{symbols}}{String, required, comma-separated list of stock symbols.
+Symbols must contain only capitalized letters.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list containing details of stock contracts.
 }
 }
 \if{html}{\out{<hr>}}
