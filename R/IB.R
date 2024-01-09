@@ -588,6 +588,50 @@
       },
 
       #' @description
+      #' Get Conid by symbol
+      #'
+      #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
+      #' @param sectype String, required, security type of the requested contract.
+      #' @param exchange String, required, exchange to receive information for in relation to the contract.
+      #' @return Conid.
+      get_conid_by_symbol = function(symbol, sectype, exchange) {
+        # find con id by symbol
+        conids = tryCatch({self$get_conids_by_exchange(exchange)},
+                          error = function(e) NULL)
+        tries = 0
+        while (is.null(conids) & tries < 10) {
+          conids = tryCatch({self$get_conids_by_exchange(exchange)},
+                            error = function(e) NULL)
+          Sys.sleep(0.5)
+          tries = tries + 1
+        }
+        if (is.null(conids)) return("Can't get data for STK ids")
+        conid_stk = conids[ticker == symbol, conid]
+
+        # check if conid_stk is empty
+        if (length(conid_stk) == 0) {
+          return("Conid_stk is empty")
+        }
+
+        # find conid for sectype
+        print("Find conid by symbol for sectype")
+        contract = self$get_sec_definfo(conid_stk, "CFD")
+        conid = tryCatch({contract[[1]]$conid}, error = function(e) NULL)
+
+        # check if conid is found
+        if (is.null(conid)) {
+          print("Conid is null")
+          contracts_ = self$search_contract_by_symbol(symbol)
+          index_ = which(lapply(contracts_, `[[`, "conid") == conid_stk)
+          index_cfd = which(lapply(contracts_[[index_]]$sections, `[[`, "secType") == "CFD")
+          conid = contracts_[[index_]]$sections[[index_cfd]]$conid
+        }
+        cat("Conid ", conid, "\n")
+
+        return(conid)
+      },
+
+      #' @description
       #' Performs a GET request to the specified Interactive Brokers API endpoint.
       #'
       #' @param accountId String, required, the account ID for which the order should be placed.
@@ -612,29 +656,14 @@
         test_ib = self$check_gateway()
         if (!test_ib) return("Check gateway didn't pass.")
 
-        # find con id by symbol
-        conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
-        print(conids)
-        tries = 0
-        while (is.null(conids) & tries < 10) {
-          conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
-          Sys.sleep(0.5)
-          tries = tries + 1
-        }
-        if (is.null(conids)) return("Can't get data for STK ids")
-        conid_stk = conids[ticker == symbol, conid]
-
-        # find conid for sectype
-        print("Find conid by symbol for sectype")
-        contract = self$get_sec_definfo(conid_stk, "CFD")
-        conid = contract[[1]]$conid
-        cat("Conid ", conid, "\n")
-
         # check if account id is in accounts
         print("Checks accounts")
         accounts = self$get_portfolio_accounts()
         accounts = unlist(lapply(accounts, `[`, "id"))
         if (!(accountId %in% accounts)) return("accountID not in accounts.")
+
+        # get conid by symbol
+        self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
 
         # get position
         print("Get position")
@@ -765,23 +794,8 @@
         test_ib = self$check_gateway()
         if (!test_ib) return("Check gateway didn't pass.")
 
-        # find con id by symbol
-        conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
-        tries = 0
-        print(conids)
-        while (is.null(conids) & tries < 10) {
-          conids = tryCatch({self$get_conids_by_exchange("AMEX")}, error = function(e) NULL)
-          Sys.sleep(0.5)
-          tries = tries + 1
-        }
-        if (is.null(conids)) return("Can't get data for STK ids")
-        conid_stk = conids[ticker == symbol, conid]
-
-        # find conid for sectype
-        print("Find conid by symbol for sectype")
-        contract = self$get_sec_definfo(conid_stk, "CFD")
-        conid = contract[[1]]$conid
-        cat("Conid ", conid, "\n")
+        # get conid by symbol
+        self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
 
         # check if account id is in accounts
         print("Checks accounts")

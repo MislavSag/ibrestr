@@ -54,6 +54,7 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_transaction_history}{\code{IB$get_transaction_history()}}
 \item \href{#method-IB-check_gateway}{\code{IB$check_gateway()}}
 \item \href{#method-IB-order_result_to_html}{\code{IB$order_result_to_html()}}
+\item \href{#method-IB-get_conid_by_symbol}{\code{IB$get_conid_by_symbol()}}
 \item \href{#method-IB-set_holdings}{\code{IB$set_holdings()}}
 \item \href{#method-IB-liquidate}{\code{IB$liquidate()}}
 \item \href{#method-IB-clone}{\code{IB$clone()}}
@@ -795,6 +796,30 @@ Performs a GET request to the specified Interactive Brokers API endpoint.
 }
 \subsection{Returns}{
 Html character.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-get_conid_by_symbol"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_conid_by_symbol}{}}}
+\subsection{Method \code{get_conid_by_symbol()}}{
+Get Conid by symbol
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_conid_by_symbol(symbol, sectype, exchange)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
+
+\item{\code{sectype}}{String, required, security type of the requested contract.}
+
+\item{\code{exchange}}{String, required, exchange to receive information for in relation to the contract.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Conid.
 }
 }
 \if{html}{\out{<hr>}}
