@@ -277,6 +277,7 @@
           } else if (!is.null(placed_order[[1]]$id)) {
             # Alternate Response Object - order requires confirmation due to a warning
             print("Alternate Response Object - order requires confirmation")
+            Sys.sleep(1L)
             replyId <- placed_order[[1]]$id[[1]]
             confirmation <- self$confirm_order(replyId, confirmed = TRUE)
             return(list(order = confirmation, info = "Confirmation"))
@@ -663,7 +664,7 @@
         if (!(accountId %in% accounts)) return("accountID not in accounts.")
 
         # get conid by symbol
-        self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
+        conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
 
         # get position
         print("Get position")
@@ -795,7 +796,7 @@
         if (!test_ib) return("Check gateway didn't pass.")
 
         # get conid by symbol
-        self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
+        conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
 
         # check if account id is in accounts
         print("Checks accounts")
