@@ -18,6 +18,8 @@ Get data data from IB Client Portal API.
 \item{\code{strategy_name}}{Strategy name, optional.}
 
 \item{\code{email_config}}{Configuration for email notifications.}
+
+\item{\code{logger}}{Logger object for logging messages.}
 }
 \if{html}{\out{</div>}}
 }
@@ -74,7 +76,8 @@ Create a new IB object.
   host = "localhost",
   port = 5000L,
   strategy_name = NULL,
-  email_config = list()
+  email_config = list(),
+  logger = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -91,6 +94,9 @@ Create a new IB object.
 Includes fields for SMTP settings and email addresses.
 Required elements: email_from, email_to,
 smtp_host, smtp_port, smtp_user, smtp_password.}
+
+\item{\code{logger}}{A logger object for logging. If not provided,
+a default no-operation logger is used.}
 }
 \if{html}{\out{</div>}}
 }

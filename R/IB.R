@@ -27,6 +27,9 @@
       #' Required elements: email_from, email_to, smtp_host, smtp_port, smtp_user, smtp_password.
       email_config = list(),
 
+      #' @field logger Logger object for logging messages.
+      logger = NULL,
+
       #' @description
       #' Create a new IB object.
       #'
@@ -37,12 +40,15 @@
       #'     Includes fields for SMTP settings and email addresses.
       #'     Required elements: email_from, email_to,
       #'     smtp_host, smtp_port, smtp_user, smtp_password.
+      #' @param logger A logger object for logging. If not provided,
+      #'     a default no-operation logger is used.
       #'
       #' @return A new `IB` object.
       initialize = function(host = "localhost",
                             port = 5000L,
                             strategy_name = NULL,
-                            email_config = list()) {
+                            email_config = list(),
+                            logger = NULL) {
         # base url
         self$host = host
         self$port = port
@@ -58,6 +64,14 @@
                                         "smtp_port", "smtp_user", "smtp_password"))
         }
         self$email_config = email_config
+
+        # loger
+        if (!is.null(logger) && inherits(logger, "Logger")) {
+          self$logger = logger
+        } else {
+          # Default to a no-operation logger
+          self$logger = lgr::get_logger("NOP") # NOP logger does nothing
+        }
       },
 
       #' @description
@@ -150,6 +164,7 @@
       #' @param exchange A string specifying the exchange.
       #' @return A data frame with columns.
       get_conids_by_exchange = function(exchange) {
+        self$logger$info(paste("Sending GET request to", "/trsrv/all-conids"))
         query = list(exchange = exchange)
         result = self$get("/trsrv/all-conids", query)
         rbindlist(result)
@@ -471,6 +486,8 @@
       #' @return A list containing details of positions for the specified account and page.
       get_account_positions = function(accountId, pageId, model = NULL, sort = NULL,
                                        direction = NULL, period = NULL) {
+        symbol = "TEST"
+        self$logger$info("Get portfolio posistions", symbol = symbol)
         endpoint <- sprintf("/portfolio/%s/positions/%s", accountId, pageId)
         query <- list(model = model, sort = sort, direction = direction, period = period)
         query <- query[!sapply(query, is.null)]
@@ -567,9 +584,8 @@
           print("Notification - send email")
           self$send_email("Check gateway returned FALSE. Check ACI",
                           "Try to 1) restart ACI 2) ceck Ibema issues",
-                          html = TRUE)
+                          html = FALSE)
         }
-
 
         return(TRUE)
       },
@@ -615,7 +631,7 @@
         }
 
         # find conid for sectype
-        print("Find conid by symbol for sectype")
+        self$logger$info("Find conid by symbol for symbol %s", symbol)
         contract = self$get_sec_definfo(conid_stk, "CFD")
         conid = tryCatch({contract[[1]]$conid}, error = function(e) NULL)
 
@@ -645,6 +661,7 @@
       #' @return It can return string if error or order info if everything is as expected.
       set_holdings = function(accountId, symbol, sectype, side, tif, weight) {
         # checks
+        self$logger$info("Checks")
         assert_string(accountId)
         assert_string(symbol)
         assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
@@ -653,37 +670,40 @@
         assert_number(weight, lower = 0, upper = 10) # max leverage X 10
 
         # check if gateway is ready
-        print("Check gateway")
+        self$logger$info("Check gateway")
         test_ib = self$check_gateway()
         if (!test_ib) return("Check gateway didn't pass.")
 
         # check if account id is in accounts
-        print("Checks accounts")
+        self$logger$info("Checks accounts")
         accounts = self$get_portfolio_accounts()
         accounts = unlist(lapply(accounts, `[`, "id"))
-        if (!(accountId %in% accounts)) return("accountID not in accounts.")
+        if (!(accountId %in% accounts)) {
+          self$logger$warn("accountID not in accounts.")
+          return("accountID not in accounts.")
+        }
 
         # get conid by symbol
         conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
 
         # get position
-        print("Get position")
+        self$logger$warn("Get position for %s", symbol)
         positions = self$get_position_by_conid(accountId, conid)
         if (length(positions) == 0) {
           position = 0
         } else {
           position = positions[[1]]$position
         }
-        cat("Position ", position, "\n")
+        self$logger$info("Position for %s is %d", symbol, position)
 
         # get available cash
-        print("Available cash")
+        self$logger$info("Available cash")
         portfolio_summary = self$get_portfolio_summary(accountId)
         cash = portfolio_summary$totalcashvalue$amount
-        cat("Cash ", cash, "\n")
+        self$logger$info("Cash %f", cash)
 
         # order body
-        print("Create body")
+        self$logger$info("Create body for %s", symbol)
         if (side == "BUY" & position == 0) {
           # get price
           fmp_url = paste0(
@@ -694,10 +714,13 @@
           res = GET(fmp_url)
           p = content(res)
           if (length(p) == 0) {
+            self$logger$warn("No data in FMP cloud for %s", symbol)
             return("No data in FMP cloud.")
           }
           price = p[[1]]$price
           quantity = floor((cash * weight) / price)
+          self$logger$info("Quantity for %s is %d",
+                           symbol, quantity)
 
           # order body
           body = list(
@@ -723,19 +746,22 @@
         #     tif = tif
         #   )
         } else {
+          self$logger$warn("We got sign but we don't buy or sellfor is %s ?",
+                           symbol)
           return("We got sign but we don't buy or sell?")
         }
 
         # place order
         placed_order = self$place_and_confirm_order(accountId, body)
-        print(placed_order)
+        self$logger$info("Places order for %s", symbol)
+        self$logger$info(placed_order)
 
         # check order
         if (is.null(placed_order$order[[1]]$order_id)) {
-          print("There is no order id in placed_order return object")
+          self$logger$warn("There is no order id in placed_order return object for %s", symbol)
           return(placed_order)
         } else {
-          print("Check status")
+          self$logger$info("Check status for %s", symbol)
           status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
           if (is.integer(status) && status == 0) {
             # notify
@@ -744,13 +770,14 @@
                               "Status is not filled",
                               html = FALSE)
             }
+            self$logger$warn("Status is not filled for %s", symbol)
             return("Status is not filled")
           }
         }
 
         # notify
         if (length(self$email_config) >= 6) {
-          print("Notification - send email")
+          self$logger$info("Notification - send email for %s", symbol)
           self$send_email("Order with Set Holdings",
                           self$order_result_to_html(status),
                           html = TRUE)

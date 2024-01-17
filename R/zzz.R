@@ -4,5 +4,7 @@
 #' @import jsonlite
 #' @import checkmate
 #' @import mailR
+#' @import lgr
+#' @import lgrExtra
 
 "_PACKAGE"
