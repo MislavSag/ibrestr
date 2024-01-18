@@ -15,6 +15,8 @@ Get data data from IB Client Portal API.
 
 \item{\code{base_url}}{Base url}
 
+\item{\code{account_id}}{Account ID.}
+
 \item{\code{strategy_name}}{Strategy name, optional.}
 
 \item{\code{email_config}}{Configuration for email notifications.}
@@ -59,6 +61,7 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_conid_by_symbol}{\code{IB$get_conid_by_symbol()}}
 \item \href{#method-IB-set_holdings}{\code{IB$set_holdings()}}
 \item \href{#method-IB-liquidate}{\code{IB$liquidate()}}
+\item \href{#method-IB-liquidate_portfolio}{\code{IB$liquidate_portfolio()}}
 \item \href{#method-IB-clone}{\code{IB$clone()}}
 }
 }
@@ -76,6 +79,7 @@ Create a new IB object.
   host = "localhost",
   port = 5000L,
   strategy_name = NULL,
+  account_id = NULL,
   email_config = list(),
   logger = NULL
 )}\if{html}{\out{</div>}}
@@ -89,6 +93,8 @@ Create a new IB object.
 \item{\code{port}}{Port, by default 5000}
 
 \item{\code{strategy_name}}{Strategy name, optional.}
+
+\item{\code{account_id}}{Account ID.}
 
 \item{\code{email_config}}{List containing email configuration details.
 Includes fields for SMTP settings and email addresses.
@@ -110,7 +116,7 @@ A new `IB` object.
 \subsection{Method \code{get()}}{
 Performs a GET request to the specified Interactive Brokers API endpoint.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get(endpoint = "/sso/validate", query = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get(endpoint = "/sso/validate", query = NULL, times = 5L)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -119,6 +125,8 @@ Performs a GET request to the specified Interactive Brokers API endpoint.
 \item{\code{endpoint}}{The endpoint path for the GET request.}
 
 \item{\code{query}}{A list of query parameters for the GET request.}
+
+\item{\code{times}}{The number of times to retry the GET request.}
 }
 \if{html}{\out{</div>}}
 }
@@ -338,15 +346,15 @@ A list containing the trading schedule details.
 Submits orders when connected to an IServer Brokerage Session.
 Supports various advanced order types and additional details.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$place_order(accountID, orders)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$place_order(orders, account_id = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountID}}{String, required, the account ID for which the order should be placed.}
-
 \item{\code{orders}}{Array of Objects, required, used to specify the order content.}
+
+\item{\code{account_id}}{String, required, the account ID for which the order should be placed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -382,13 +390,13 @@ A list containing details of the order confirmation.
 \subsection{Method \code{place_and_confirm_order()}}{
 Places an order and handles the confirmation process.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$place_and_confirm_order(accountID, orders)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$place_and_confirm_order(account_id = NULL, orders)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountID}}{String, required, the account ID for which the order should be placed.}
+\item{\code{account_id}}{String, required, the account ID for which the order should be placed.}
 
 \item{\code{orders}}{Array of Objects, required, used to specify the order content.}
 }
@@ -404,13 +412,13 @@ A list containing details of the order placement and confirmation.
 \subsection{Method \code{cancel_order()}}{
 Cancels an open order for the specified account and order ID.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$cancel_order(accountId, orderId)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$cancel_order(account_id = NULL, orderId)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountId}}{String, required, the account ID for which the order should be canceled.}
+\item{\code{account_id}}{String, required, the account ID for which the order should be canceled.}
 
 \item{\code{orderId}}{String, required, the order ID that should be canceled.}
 }
@@ -426,7 +434,7 @@ A list containing the confirmation of the cancellation request.
 \subsection{Method \code{get_live_orders()}}{
 Retrieves a list of live orders (cancelled, filled, submitted) for the given account.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_live_orders(filters = NULL, force = NULL, accountId = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_live_orders(filters = NULL, force = NULL, account_id = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -436,7 +444,7 @@ Retrieves a list of live orders (cancelled, filled, submitted) for the given acc
 
 \item{\code{force}}{Boolean, optional, force the system to clear saved information and make a fresh request for orders.}
 
-\item{\code{accountId}}{String, optional, for linked accounts, view orders on specified sub-accounts.}
+\item{\code{account_id}}{String, optional, for linked accounts, view orders on specified sub-accounts.}
 }
 \if{html}{\out{</div>}}
 }
@@ -492,7 +500,7 @@ Integer, 1L if the order status is 'filled' within the specified time, otherwise
 \subsection{Method \code{get_trades()}}{
 Retrieves a list of trades for the currently selected account for the current day and six previous days.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_trades(days = NULL, accountId = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_trades(days = NULL, account_id = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -500,7 +508,7 @@ Retrieves a list of trades for the currently selected account for the current da
 \describe{
 \item{\code{days}}{String, optional, specify the number of days to receive executions for, up to a maximum of 7 days.}
 
-\item{\code{accountId}}{String, optional, include a specific account identifier or allocation group to retrieve trades for.}
+\item{\code{account_id}}{String, optional, include a specific account identifier or allocation group to retrieve trades for.}
 }
 \if{html}{\out{</div>}}
 }
@@ -642,13 +650,13 @@ A list containing details of portfolio subaccounts.
 \subsection{Method \code{get_portfolio_summary()}}{
 Retrieves information regarding settled cash, cash balances, etc., in the account’s base currency and other cash balances held in other currencies.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_summary(accountId)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_summary(account_id)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountId}}{String, required, specify the account ID for which you require ledger information.}
+\item{\code{account_id}}{String, required, specify the account ID for which you require ledger information.}
 }
 \if{html}{\out{</div>}}
 }
@@ -663,7 +671,7 @@ A list containing details of the portfolio summary.
 Retrieves a list of positions for the given account with pagination support.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{IB$get_account_positions(
-  accountId,
+  account_id = NULL,
   pageId,
   model = NULL,
   sort = NULL,
@@ -675,7 +683,7 @@ Retrieves a list of positions for the given account with pagination support.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountId}}{String, required, the account ID for which positions should be retrieved.}
+\item{\code{account_id}}{String, required, the account ID for which positions should be retrieved.}
 
 \item{\code{pageId}}{String, required, the "page" of positions to be returned (pagination starts at 0).}
 
@@ -699,13 +707,13 @@ A list containing details of positions for the specified account and page.
 \subsection{Method \code{get_position_by_conid()}}{
 Retrieves position details for the specified contract identifier (conid).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_position_by_conid(accountId, conId)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_position_by_conid(account_id = NULL, conId)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountId}}{String, required, the account ID for which the position should be retrieved.}
+\item{\code{account_id}}{String, required, the account ID for which the position should be retrieved.}
 
 \item{\code{conId}}{String, required, the contract ID to receive position information on.}
 }
@@ -834,13 +842,13 @@ Conid.
 \subsection{Method \code{set_holdings()}}{
 Performs a GET request to the specified Interactive Brokers API endpoint.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$set_holdings(accountId, symbol, sectype, side, tif, weight)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$set_holdings(account_id = NULL, symbol, sectype, side, tif, weight)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountId}}{String, required, the account ID for which the order should be placed.}
+\item{\code{account_id}}{String, required, the account ID for which the order should be placed.}
 
 \item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
 
@@ -865,29 +873,46 @@ It can return string if error or order info if everything is as expected.
 \subsection{Method \code{liquidate()}}{
 Liquidate all positions by symbol.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$liquidate(accountId, symbol, sectype)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$liquidate(account_id = NULL, sectype = NULL, symbol = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{accountId}}{String, required, the account ID for which the order should be placed.}
-
-\item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
+\item{\code{account_id}}{String, required, the account ID for which the order should be placed.}
 
 \item{\code{sectype}}{String, required, security type of the requested contract.}
 
-\item{\code{side}}{String, required, Valid Values: SELL or BUY.}
-
-\item{\code{tif}}{String, required, The Time-In-Force determines how long the order remains active on the market.
-Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).}
-
-\item{\code{weight}}{Numeric, required, portfolio weight.}
+\item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.
+If symbol is set to NULL, the method will liquidate all positions.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 It can return string if error or order info if everything is as expected.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-liquidate_portfolio"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-liquidate_portfolio}{}}}
+\subsection{Method \code{liquidate_portfolio()}}{
+Liquidate all positions for all symbols in the portfolio.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$liquidate_portfolio(account_id = NULL, sectype = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{account_id}}{String, required, the account ID for which the order should be placed.}
+
+\item{\code{sectype}}{Character vector, required, security type we want to sell.
+If it is NULL, the method will liquidate all positions.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Boolean.
 }
 }
 \if{html}{\out{<hr>}}

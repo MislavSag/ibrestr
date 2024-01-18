@@ -18,6 +18,9 @@
       #' @field base_url Base url
       base_url = NULL,
 
+      #' @field account_id Account ID.
+      account_id = NULL,
+
       #' @field strategy_name Strategy name, optional.
       strategy_name = NULL,
 
@@ -36,6 +39,7 @@
       #' @param host Host, by default localhost
       #' @param port Port, by default 5000
       #' @param strategy_name Strategy name, optional.
+      #' @param account_id Account ID.
       #' @param email_config List containing email configuration details.
       #'     Includes fields for SMTP settings and email addresses.
       #'     Required elements: email_from, email_to,
@@ -47,12 +51,14 @@
       initialize = function(host = "localhost",
                             port = 5000L,
                             strategy_name = NULL,
+                            account_id = NULL,
                             email_config = list(),
                             logger = NULL) {
         # base url
         self$host = host
         self$port = port
         self$base_url = sprintf("https://%s:%d/v1/api", host, port)
+        self$account_id = account_id
 
         # other
         self$strategy_name = strategy_name
@@ -79,15 +85,16 @@
       #'
       #' @param endpoint The endpoint path for the GET request.
       #' @param query A list of query parameters for the GET request.
+      #' @param times The number of times to retry the GET request.
       #' @return The response from the GET request.
-      get = function(endpoint = "/sso/validate", query = NULL) {
+      get = function(endpoint = "/sso/validate", query = NULL, times = 5L) {
         url <- paste0(self$base_url, endpoint)
         response <- RETRY(
           "GET",
           url,
           config = config(ssl_verifypeer = FALSE, ssl_verifyhost = FALSE, timeout = 15),
           query = query,
-          times = 5L
+          times = times
         )
         content(response)
       },
@@ -204,8 +211,7 @@
                       exchange = exchange, strike = strike, right = right,
                       issuerId = issuerId)
         query = query[!sapply(query, is.null)]
-        print(query) # DEBUG
-        self$get("/iserver/secdef/info", query)
+        self$get("/iserver/secdef/info", query, times = 2L)
       },
 
       #' @description
@@ -249,17 +255,18 @@
       #' Submits orders when connected to an IServer Brokerage Session.
       #' Supports various advanced order types and additional details.
       #'
-      #' @param accountID String, required, the account ID for which the order should be placed.
+      #' @param account_id String, required, the account ID for which the order should be placed.
       #' @param orders Array of Objects, required, used to specify the order content.
       #' @return A list containing details of the order status.
-      place_order = function(accountID, orders) {
+      place_order = function(orders, account_id=NULL) {
+        if (is.null(account_id)) account_id = self$account_id
+        assert_string(account_id)
         assert_list(orders)
         assert_names(names(orders),
                      "named",
                      must.include = c("conid", "orderType", "side", "tif"))
-        endpoint <- sprintf("/iserver/account/%s/orders", accountID)
+        endpoint <- sprintf("/iserver/account/%s/orders", account_id)
         body <- toJSON(list(orders = list(orders)), auto_unbox = TRUE)
-        print(body)
         self$post(endpoint, body = body)
       },
 
@@ -278,12 +285,12 @@
       #' @description
       #' Places an order and handles the confirmation process.
       #'
-      #' @param accountID String, required, the account ID for which the order should be placed.
+      #' @param account_id String, required, the account ID for which the order should be placed.
       #' @param orders Array of Objects, required, used to specify the order content.
       #' @return A list containing details of the order placement and confirmation.
-      place_and_confirm_order = function(accountID, orders) {
-        placed_order = self$place_order(accountID, orders)
-        print(placed_order)
+      place_and_confirm_order = function(account_id=NULL, orders) {
+        if (is.null(account_id)) account_id = self$account_id
+        placed_order = self$place_order(orders, account_id)
 
         if (length(placed_order) > 0) {
           if (!is.null(placed_order[[1]]$order_id)) {
@@ -291,10 +298,10 @@
             return(list(order = placed_order, info = "Order placed successfully"))
           } else if (!is.null(placed_order[[1]]$id)) {
             # Alternate Response Object - order requires confirmation due to a warning
-            print("Alternate Response Object - order requires confirmation")
+            self$logger$info("Alternate Response Object - order requires confirmation")
             Sys.sleep(1L)
-            replyId <- placed_order[[1]]$id[[1]]
-            confirmation <- self$confirm_order(replyId, confirmed = TRUE)
+            replyId =  placed_order[[1]]$id[[1]]
+            confirmation = self$confirm_order(replyId, confirmed = TRUE)
             return(list(order = confirmation, info = "Confirmation"))
           } else if (!is.null(placed_order$error)) {
             # Order Reject Object - order was rejected
@@ -310,11 +317,12 @@
       #' @description
       #' Cancels an open order for the specified account and order ID.
       #'
-      #' @param accountId String, required, the account ID for which the order should be canceled.
+      #' @param account_id String, required, the account ID for which the order should be canceled.
       #' @param orderId String, required, the order ID that should be canceled.
       #' @return A list containing the confirmation of the cancellation request.
-      cancel_order = function(accountId, orderId) {
-        endpoint <- sprintf("/iserver/account/%s/order/%s", accountId, orderId)
+      cancel_order = function(account_id=NULL, orderId) {
+        if (is.null(account_id)) account_id = self$account_id
+        endpoint <- sprintf("/iserver/account/%s/order/%s", account_id, orderId)
         self$delete(endpoint)
       },
 
@@ -325,10 +333,10 @@
       #'
       #' @param filters String, optional, filter orders by a unique status value (separated by commas for multiple filters).
       #' @param force Boolean, optional, force the system to clear saved information and make a fresh request for orders.
-      #' @param accountId String, optional, for linked accounts, view orders on specified sub-accounts.
+      #' @param account_id String, optional, for linked accounts, view orders on specified sub-accounts.
       #' @return A list containing details of live orders.
-      get_live_orders = function(filters = NULL, force = NULL, accountId = NULL) {
-        query = list(filters = filters, force = force, accountId = accountId)
+      get_live_orders = function(filters = NULL, force = NULL, account_id = NULL) {
+        query = list(filters = filters, force = force, account_id = account_id)
         query <- query[!sapply(query, is.null)]
         self$get("/iserver/account/orders", query = query)
       },
@@ -352,10 +360,13 @@
       get_order_status_repeated = function(orderId, n) {
         for (i in 1:n) {
           status_response = self$get_order_status(orderId)
-          if (length(status_response) > 0 && status_response$order_status == "Filled") {
+          if (length(status_response) > 0 &&
+              (status_response$order_status == "Filled" |
+               status_response$cum_fill > 0)) {
             return(status_response)
           }
-          Sys.sleep(1)  # Wait for 1 second before next check
+          self$logger$info("Check status %i ", as.integer(i))
+          Sys.sleep(1)
         }
         return(0L)
       },
@@ -364,10 +375,10 @@
       #' Retrieves a list of trades for the currently selected account for the current day and six previous days.
       #'
       #' @param days String, optional, specify the number of days to receive executions for, up to a maximum of 7 days.
-      #' @param accountId String, optional, include a specific account identifier or allocation group to retrieve trades for.
+      #' @param account_id String, optional, include a specific account identifier or allocation group to retrieve trades for.
       #' @return A list containing details of trades.
-      get_trades = function(days = NULL, accountId = NULL) {
-        query <- list(days = days, accountId = accountId)
+      get_trades = function(days = NULL, account_id = NULL) {
+        query <- list(days = days, account_id = account_id)
         query <- query[!sapply(query, is.null)]
         self$get("/iserver/account/trades", query = query)
       },
@@ -467,41 +478,42 @@
       #' @description
       #' Retrieves information regarding settled cash, cash balances, etc., in the account’s base currency and other cash balances held in other currencies.
       #'
-      #' @param accountId String, required, specify the account ID for which you require ledger information.
+      #' @param account_id String, required, specify the account ID for which you require ledger information.
       #' @return A list containing details of the portfolio summary.
-      get_portfolio_summary = function(accountId) {
-        endpoint <- sprintf("/portfolio/%s/summary", accountId)
+      get_portfolio_summary = function(account_id) {
+        endpoint <- sprintf("/portfolio/%s/summary", account_id)
         self$get(endpoint)
       },
 
       #' @description
       #' Retrieves a list of positions for the given account with pagination support.
       #'
-      #' @param accountId String, required, the account ID for which positions should be retrieved.
+      #' @param account_id String, required, the account ID for which positions should be retrieved.
       #' @param pageId String, required, the "page" of positions to be returned (pagination starts at 0).
       #' @param model String, optional, code for the model portfolio to compare against.
       #' @param sort String, optional, declare the table to be sorted by which column.
       #' @param direction String, optional, the order to sort by ('a' for ascending, 'd' for descending).
       #' @param period String, optional, period for PnL column (e.g., 1D, 7D, 1M).
       #' @return A list containing details of positions for the specified account and page.
-      get_account_positions = function(accountId, pageId, model = NULL, sort = NULL,
+      get_account_positions = function(account_id=NULL, pageId, model = NULL, sort = NULL,
                                        direction = NULL, period = NULL) {
-        symbol = "TEST"
-        self$logger$info("Get portfolio posistions", symbol = symbol)
-        endpoint <- sprintf("/portfolio/%s/positions/%s", accountId, pageId)
-        query <- list(model = model, sort = sort, direction = direction, period = period)
-        query <- query[!sapply(query, is.null)]
+        if (is.null(account_id)) account_id = self$account_id
+        self$logger$info("Get portfolio posistions for the account %s", account_id)
+        endpoint = sprintf("/portfolio/%s/positions/%s", account_id, pageId)
+        query = list(model = model, sort = sort, direction = direction, period = period)
+        query = query[!sapply(query, is.null)]
         self$get(endpoint, query = query)
       },
 
       #' @description
       #' Retrieves position details for the specified contract identifier (conid).
       #'
-      #' @param accountId String, required, the account ID for which the position should be retrieved.
+      #' @param account_id String, required, the account ID for which the position should be retrieved.
       #' @param conId String, required, the contract ID to receive position information on.
       #' @return A list containing position details for the specified conid.
-      get_position_by_conid = function(accountId, conId) {
-        endpoint <- sprintf("/portfolio/%s/position/%s", accountId, conId)
+      get_position_by_conid = function(account_id=NULL, conId) {
+        if (is.null(account_id)) account_id = self$account_id
+        endpoint <- sprintf("/portfolio/%s/position/%s", account_id, conId)
         self$get(endpoint)
       },
 
@@ -581,7 +593,7 @@
 
         # notify
         if (length(self$email_config) >= 6) {
-          print("Notification - send email")
+          self$logger$info("Notification - send email")
           self$send_email("Check gateway returned FALSE. Check ACI",
                           "Try to 1) restart ACI 2) ceck Ibema issues",
                           html = FALSE)
@@ -637,13 +649,13 @@
 
         # check if conid is found
         if (is.null(conid)) {
-          print("Conid is null")
+          self$logger$info("ConID is NULL for the symbol %s", symbol)
           contracts_ = self$search_contract_by_symbol(symbol)
           index_ = which(lapply(contracts_, `[[`, "conid") == conid_stk)
           index_cfd = which(lapply(contracts_[[index_]]$sections, `[[`, "secType") == "CFD")
           conid = contracts_[[index_]]$sections[[index_cfd]]$conid
         }
-        cat("Conid ", conid, "\n")
+        self$logger$info("ConId is %s", conid)
 
         return(conid)
       },
@@ -651,7 +663,7 @@
       #' @description
       #' Performs a GET request to the specified Interactive Brokers API endpoint.
       #'
-      #' @param accountId String, required, the account ID for which the order should be placed.
+      #' @param account_id String, required, the account ID for which the order should be placed.
       #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
       #' @param sectype String, required, security type of the requested contract.
       #' @param side String, required, Valid Values: SELL or BUY.
@@ -659,10 +671,11 @@
       #'     Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).
       #' @param weight Numeric, required, portfolio weight.
       #' @return It can return string if error or order info if everything is as expected.
-      set_holdings = function(accountId, symbol, sectype, side, tif, weight) {
+      set_holdings = function(account_id=NULL, symbol, sectype, side, tif, weight) {
         # checks
+        if (is.null(account_id)) account_id = self$account_id
         self$logger$info("Checks")
-        assert_string(accountId)
+        assert_string(account_id)
         assert_string(symbol)
         assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
         assert_choice(side, c("BUY")) # DON'T ALLOW SELL (SHORT) YET
@@ -678,9 +691,9 @@
         self$logger$info("Checks accounts")
         accounts = self$get_portfolio_accounts()
         accounts = unlist(lapply(accounts, `[`, "id"))
-        if (!(accountId %in% accounts)) {
-          self$logger$warn("accountID not in accounts.")
-          return("accountID not in accounts.")
+        if (!(account_id %in% accounts)) {
+          self$logger$warn("account_id not in accounts.")
+          return("account_id not in accounts.")
         }
 
         # get conid by symbol
@@ -688,7 +701,7 @@
 
         # get position
         self$logger$warn("Get position for %s", symbol)
-        positions = self$get_position_by_conid(accountId, conid)
+        positions = self$get_position_by_conid(account_id, conid)
         if (length(positions) == 0) {
           position = 0
         } else {
@@ -698,7 +711,7 @@
 
         # get available cash
         self$logger$info("Available cash")
-        portfolio_summary = self$get_portfolio_summary(accountId)
+        portfolio_summary = self$get_portfolio_summary(account_id)
         cash = portfolio_summary$totalcashvalue$amount
         self$logger$info("Cash %f", cash)
 
@@ -724,7 +737,7 @@
 
           # order body
           body = list(
-            acctId = accountId,
+            acctId = account_id,
             conid = as.integer(conid),
             sectype = paste0(conid, "@", sectype),
             orderType = "MKT",
@@ -736,7 +749,7 @@
         # } else if (sign == "SELL" & position > 0) {
         #   # order body
         #   body = list(
-        #     acctId = accountId,
+        #     acctId = account_id,
         #     conid = as.integer(conid),
         #     sectype = paste0(conid, "@CFD"),
         #     orderType = "MKT",
@@ -752,7 +765,7 @@
         }
 
         # place order
-        placed_order = self$place_and_confirm_order(accountId, body)
+        placed_order = self$place_and_confirm_order(account_id, body)
         self$logger$info("Places order for %s", symbol)
         self$logger$info(placed_order)
 
@@ -789,19 +802,16 @@
       #' @description
       #' Liquidate all positions by symbol.
       #'
-      #' @param accountId String, required, the account ID for which the order should be placed.
-      #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
+      #' @param account_id String, required, the account ID for which the order should be placed.
       #' @param sectype String, required, security type of the requested contract.
-      #' @param side String, required, Valid Values: SELL or BUY.
-      #' @param tif String, required, The Time-In-Force determines how long the order remains active on the market.
-      #'     Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).
-      #' @param weight Numeric, required, portfolio weight.
+      #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
+      #'     If symbol is set to NULL, the method will liquidate all positions.
       #' @return It can return string if error or order info if everything is as expected.
-      liquidate = function(accountId, symbol, sectype) {
+      liquidate = function(account_id=NULL, sectype=NULL, symbol=NULL) {
         # debug
-        # accountId = "DU8203010"
-        # symbol = "AAPL"
-        # sectype = "CFD"
+        # account_id = "DU6474915"
+        # symbol = NULL
+        # sectype = NULL
         # host = "cgspaperexuber.eastus.azurecontainer.io"
         # port = 5000
         # strategy_name = "Exuber 2"
@@ -813,33 +823,41 @@
         # )
 
         # checks
-        assert_string(accountId)
-        assert_string(symbol)
-        assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
+        if (is.null(account_id)) account_id = self$account_id
+        assert_string(account_id)
+        assert_string(symbol, null.ok = TRUE)
+        assert_choice(sectype,
+                      choices = c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"),
+                      null.ok = TRUE)
 
         # check if gateway is ready
-        print("Check gateway")
-        test_ib = self$check_gateway()
-        if (!test_ib) return("Check gateway didn't pass.")
+        self$logger$info("Check gateway")
+        if (!self$check_gateway()) {
+          self$logger$warn("Check gateway didn't pass.")
+          return("Check gateway didn't pass.")
+        }
+
+        # check if account id is in accounts
+        self$logger$info("Check accounts")
+        accounts = self$get_portfolio_accounts()
+        accounts = unlist(lapply(accounts, `[`, "id"))
+        if (!(account_id %in% accounts)) {
+          self$logger$warn("account_id not in accounts.")
+          return("account_id not in accounts.")
+        }
 
         # get conid by symbol
         conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
 
-        # check if account id is in accounts
-        print("Checks accounts")
-        accounts = self$get_portfolio_accounts()
-        accounts = unlist(lapply(accounts, `[`, "id"))
-        if (!(accountId %in% accounts)) return("accountID not in accounts.")
-
         # get position
-        print("Get position")
-        positions = self$get_position_by_conid(accountId, conid)
+        self$logger$info("Get position for %s", symbol)
+        positions = self$get_position_by_conid(account_id, conid)
         if (length(positions) == 0) {
           position = 0
         } else {
           position = positions[[1]]$position
         }
-        cat("Position ", position, "\n")
+        self$logger$info("Position for %s is %d", symbol, position)
 
         # Check if position is greater than 0
         if (position == 0) {
@@ -848,7 +866,7 @@
 
         # define body
         body = list(
-          acctId = accountId,
+          acctId = account_id,
           conid = as.integer(conid),
           sectype = paste0(conid, "@", sectype),
           orderType = "MKT",
@@ -859,15 +877,14 @@
         )
 
         # place order
-        placed_order = self$place_and_confirm_order(accountId, body)
-        print(placed_order)
+        placed_order = self$place_and_confirm_order(account_id, body)
 
         # place order, confirm and heck status
         if (is.null(placed_order$order[[1]]$order_id)) {
-          print("There is no order id in placed_order return object")
+          self$logger$info("There is no order id in placed_order return object")
           return(placed_order)
         } else {
-          print("Check status")
+          self$logger$info("Check status")
           status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
           if (is.integer(status) && status == 0) {
             # notify
@@ -888,6 +905,61 @@
                           html = TRUE)
         }
         return(placed_order)
+      },
+
+      #' @description
+      #' Liquidate all positions for all symbols in the portfolio.
+      #'
+      #' @param account_id String, required, the account ID for which the order should be placed.
+      #' @param sectype Character vector, required, security type we want to sell.
+      #'     If it is NULL, the method will liquidate all positions.
+      #' @return Boolean.
+      liquidate_portfolio = function(account_id=NULL, sectype = NULL) {
+        # DEBUG
+        # account_id = "DU6474915"
+        # sectype = NULL
+
+        # checks
+        if (is.null(account_id)) account_id = self$account_id
+        assert_string(account_id)
+        assert_choice(sectype,
+                      choices = c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"),
+                      null.ok = TRUE)
+
+        # get all positions
+        positions = self$get_account_positions(account_id, 0)
+        if (length(positions) == 0) {
+          self$logger$warn("No positions for the account %s", account_id)
+          return(0L)
+        }
+        positions = lapply(positions, as.data.table)
+        positions = rbindlist(positions, fill = TRUE)
+        positions = positions[, .(acctId, conid, ticker, assetClass)]
+        positions = unique(positions)
+
+        # checks
+        if (!check_true(positions[, account_id %in% unique(acctId)])) {
+          self$logger$warn("account_id not in accounts.")
+          return(0L)
+        }
+        if (!is.null(sectype)) {
+          if (!test_character(intersect(positions[, unique(assetClass)], sectype),
+                               min.len = 1)) {
+            self$logger$warn("Sectype not in positions.")
+            return(0L)
+          }
+        }
+
+        # liquidate all symbols
+        tickers_ = positions[, ticker]
+        assets_ = positions[, assetClass]
+        for (i in seq_along(tickers_)) {
+          self$logger$info("Liquidate %s %s", tickers_[i], assets_[i])
+          self$liquidate(account_id, assets_[i], tickers_[i])
+        }
+
+        self$logger$info("Liquidate portfolio finished")
+        return(1L)
       }
     )
   )
