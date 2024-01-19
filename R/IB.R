@@ -68,6 +68,7 @@
           assert_names(names(email_config), "named",
                        must.include = c("email_from", "email_to", "smtp_host",
                                         "smtp_port", "smtp_user", "smtp_password"))
+          private$notify = TRUE
         }
         self$email_config = email_config
 
@@ -143,7 +144,7 @@
       #' @param body The body content of the email.
       #' @param html Boolean indicating if the body content is HTML. Defaults to FALSE.
       send_email = function(subject, body, html = FALSE) {
-        if (length(self$email_config) >= 6) {
+        if (private$notify) {
           send.mail(
             from = self$email_config$email_from,
             to = self$email_config$email_to,
@@ -260,6 +261,7 @@
       #' @return A list containing details of the order status.
       place_order = function(orders, account_id=NULL) {
         if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         assert_string(account_id)
         assert_list(orders)
         assert_names(names(orders),
@@ -290,7 +292,9 @@
       #' @return A list containing details of the order placement and confirmation.
       place_and_confirm_order = function(account_id=NULL, orders) {
         if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         placed_order = self$place_order(orders, account_id)
+        print(placed_order)
 
         if (length(placed_order) > 0) {
           if (!is.null(placed_order[[1]]$order_id)) {
@@ -322,6 +326,7 @@
       #' @return A list containing the confirmation of the cancellation request.
       cancel_order = function(account_id=NULL, orderId) {
         if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         endpoint <- sprintf("/iserver/account/%s/order/%s", account_id, orderId)
         self$delete(endpoint)
       },
@@ -378,6 +383,8 @@
       #' @param account_id String, optional, include a specific account identifier or allocation group to retrieve trades for.
       #' @return A list containing details of trades.
       get_trades = function(days = NULL, account_id = NULL) {
+        if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         query <- list(days = days, account_id = account_id)
         query <- query[!sapply(query, is.null)]
         self$get("/iserver/account/trades", query = query)
@@ -480,7 +487,9 @@
       #'
       #' @param account_id String, required, specify the account ID for which you require ledger information.
       #' @return A list containing details of the portfolio summary.
-      get_portfolio_summary = function(account_id) {
+      get_portfolio_summary = function(account_id=NULL) {
+        if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         endpoint <- sprintf("/portfolio/%s/summary", account_id)
         self$get(endpoint)
       },
@@ -592,13 +601,30 @@
         }
 
         # notify
-        if (length(self$email_config) >= 6) {
+        if (private$notify) {
           self$logger$info("Notification - send email")
           self$send_email("Check gateway returned FALSE. Check ACI",
                           "Try to 1) restart ACI 2) ceck Ibema issues",
                           html = FALSE)
         }
 
+        return(TRUE)
+      },
+
+      #' @description
+      #' Check if account id is in accounts
+      #' @param account_id String, required, the account ID for which the order should be placed.
+      #' @return Boolean (error or no error).
+      #' @export
+      check_account = function(account_id) {
+        # check if account id is in accounts
+        self$logger$info("Checks accounts")
+        accounts = self$get_portfolio_accounts()
+        accounts = unlist(lapply(accounts, `[`, "id"))
+        if (!(account_id %in% accounts)) {
+          self$logger$warn("account_id not in accounts.")
+          return(FALSE)
+        }
         return(TRUE)
       },
 
@@ -642,6 +668,7 @@
           return("Conid_stk is empty")
         }
 
+        # UNSTABLE
         # find conid for sectype
         self$logger$info("Find conid by symbol for symbol %s", symbol)
         contract = self$get_sec_definfo(conid_stk, "CFD")
@@ -674,6 +701,7 @@
       set_holdings = function(account_id=NULL, symbol, sectype, side, tif, weight) {
         # checks
         if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         self$logger$info("Checks")
         assert_string(account_id)
         assert_string(symbol)
@@ -686,15 +714,6 @@
         self$logger$info("Check gateway")
         test_ib = self$check_gateway()
         if (!test_ib) return("Check gateway didn't pass.")
-
-        # check if account id is in accounts
-        self$logger$info("Checks accounts")
-        accounts = self$get_portfolio_accounts()
-        accounts = unlist(lapply(accounts, `[`, "id"))
-        if (!(account_id %in% accounts)) {
-          self$logger$warn("account_id not in accounts.")
-          return("account_id not in accounts.")
-        }
 
         # get conid by symbol
         conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
@@ -759,7 +778,7 @@
         #     tif = tif
         #   )
         } else {
-          self$logger$warn("We got sign but we don't buy or sellfor is %s ?",
+          self$logger$warn("We got sign but we don't buy or sell for %s ?",
                            symbol)
           return("We got sign but we don't buy or sell?")
         }
@@ -778,7 +797,7 @@
           status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
           if (is.integer(status) && status == 0) {
             # notify
-            if (length(self$email_config) >= 6) {
+            if (private$notify) {
               self$send_email("Order status not filled",
                               "Status is not filled",
                               html = FALSE)
@@ -789,7 +808,7 @@
         }
 
         # notify
-        if (length(self$email_config) >= 6) {
+        if (private$notify) {
           self$logger$info("Notification - send email for %s", symbol)
           self$send_email("Order with Set Holdings",
                           self$order_result_to_html(status),
@@ -809,21 +828,12 @@
       #' @return It can return string if error or order info if everything is as expected.
       liquidate = function(account_id=NULL, sectype=NULL, symbol=NULL) {
         # debug
-        # account_id = "DU6474915"
-        # symbol = NULL
-        # sectype = NULL
-        # host = "cgspaperexuber.eastus.azurecontainer.io"
-        # port = 5000
-        # strategy_name = "Exuber 2"
-        # self = IB$new(
-        #   host = host,
-        #   port = port,
-        #   strategy_name = strategy_name,
-        #   email_config = NULL
-        # )
+        # symbol = "SPY"
+        # sectype = "CFD"
 
         # checks
         if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         assert_string(account_id)
         assert_string(symbol, null.ok = TRUE)
         assert_choice(sectype,
@@ -862,6 +872,10 @@
         # Check if position is greater than 0
         if (position == 0) {
           return("Position is 0")
+        } else if (position > 0) {
+          side_ = "SELL"
+        } else {
+          side_ = "BUY"
         }
 
         # define body
@@ -871,8 +885,8 @@
           sectype = paste0(conid, "@", sectype),
           orderType = "MKT",
           outsideRTH = FALSE,
-          side = "SELL",
-          quantity = position,
+          side = side_,
+          quantity = abs(position),
           tif = "GTC"
         )
 
@@ -888,7 +902,7 @@
           status = self$get_order_status_repeated(placed_order$order[[1]]$order_id, 60)
           if (is.integer(status) && status == 0) {
             # notify
-            if (length(self$email_config) >= 6) {
+            if (private$notify) {
               self$send_email("Order status not filled",
                               "Status is not filled",
                               html = FALSE)
@@ -898,7 +912,7 @@
         }
 
         # notify
-        if (length(self$email_config) >= 6) {
+        if (private$notify) {
           print("Notification - send email")
           self$send_email("Order with Liquidate",
                           self$order_result_to_html(status),
@@ -921,6 +935,7 @@
 
         # checks
         if (is.null(account_id)) account_id = self$account_id
+        assert_true(self$check_account(account_id))
         assert_string(account_id)
         assert_choice(sectype,
                       choices = c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"),
@@ -961,5 +976,8 @@
         self$logger$info("Liquidate portfolio finished")
         return(1L)
       }
+    ),
+    private = list(
+      notify = NULL
     )
   )

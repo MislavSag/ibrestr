@@ -57,6 +57,7 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_account_performance}{\code{IB$get_account_performance()}}
 \item \href{#method-IB-get_transaction_history}{\code{IB$get_transaction_history()}}
 \item \href{#method-IB-check_gateway}{\code{IB$check_gateway()}}
+\item \href{#method-IB-check_account}{\code{IB$check_account()}}
 \item \href{#method-IB-order_result_to_html}{\code{IB$order_result_to_html()}}
 \item \href{#method-IB-get_conid_by_symbol}{\code{IB$get_conid_by_symbol()}}
 \item \href{#method-IB-set_holdings}{\code{IB$set_holdings()}}
@@ -785,6 +786,26 @@ Check for errors in gateway
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{tries}}{Number of tries - number of get requests and seconds.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Boolean (error or no error).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-IB-check_account"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-check_account}{}}}
+\subsection{Method \code{check_account()}}{
+Check if account id is in accounts
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{IB$check_account(account_id)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{account_id}}{String, required, the account ID for which the order should be placed.}
 }
 \if{html}{\out{</div>}}
 }
