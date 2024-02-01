@@ -33,6 +33,9 @@
       #' @field logger Logger object for logging messages.
       logger = NULL,
 
+      #' @field conids_us Helped object that contains all conids for US market.
+      conids_us = NULL,
+
       #' @description
       #' Create a new IB object.
       #'
@@ -79,6 +82,9 @@
           # Default to a no-operation logger
           self$logger = lgr::get_logger("NOP") # NOP logger does nothing
         }
+
+        # get all conids for US market
+        self$conids_us = private$get_conids_by_exchange_dump()
       },
 
       #' @description
@@ -212,7 +218,7 @@
                       exchange = exchange, strike = strike, right = right,
                       issuerId = issuerId)
         query = query[!sapply(query, is.null)]
-        self$get("/iserver/secdef/info", query, times = 2L)
+        self$get("/iserver/secdef/info", query, times = 1L)
       },
 
       #' @description
@@ -649,35 +655,30 @@
       #' @param sectype String, required, security type of the requested contract.
       #' @param exchange String, required, exchange to receive information for in relation to the contract.
       #' @return Conid.
-      get_conid_by_symbol = function(symbol, sectype, exchange) {
+      get_conid_by_symbol = function(symbol, sectype) {
         # find con id by symbol
-        conids = tryCatch({self$get_conids_by_exchange(exchange)},
-                          error = function(e) NULL)
-        tries = 0
-        while (is.null(conids) & tries < 10) {
-          conids = tryCatch({self$get_conids_by_exchange(exchange)},
-                            error = function(e) NULL)
-          Sys.sleep(0.5)
-          tries = tries + 1
+        if (!is.null(self$conids_us)) {
+          conid_stk = self$conids_us[ticker == symbol, conid]
+        } else {
+          conid_stk = self$get_stocks_by_symbol(symbol)
+          conid_stk = Filter(private$matches_criteria, conid_stk[[1]])
+          conid_stk = conid_stk[[1]]$contracts[[1]]$conid
         }
-        if (is.null(conids)) return("Can't get data for STK ids")
-        conid_stk = conids[ticker == symbol, conid]
 
         # check if conid_stk is empty
         if (length(conid_stk) == 0) {
           return("Conid_stk is empty")
         }
 
-        # UNSTABLE
         # find conid for sectype
         self$logger$info("Find conid by symbol for symbol %s", symbol)
+        contracts_ = self$search_contract_by_symbol(symbol)
         contract = self$get_sec_definfo(conid_stk, "CFD")
         conid = tryCatch({contract[[1]]$conid}, error = function(e) NULL)
 
         # check if conid is found
         if (is.null(conid)) {
           self$logger$info("ConID is NULL for the symbol %s", symbol)
-          contracts_ = self$search_contract_by_symbol(symbol)
           index_ = which(lapply(contracts_, `[[`, "conid") == conid_stk)
           index_cfd = which(lapply(contracts_[[index_]]$sections, `[[`, "secType") == "CFD")
           conid = contracts_[[index_]]$sections[[index_cfd]]$conid
@@ -697,23 +698,31 @@
       #' @param tif String, required, The Time-In-Force determines how long the order remains active on the market.
       #'     Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).
       #' @param weight Numeric, required, portfolio weight.
+      #' @param check Boolean, optional, if TRUE check if account_id is in accounts,
+      #'     if Gataway is active and if function arguments have correct values and types.
+      #'     If FALSE, skip checks, but is faster
       #' @return It can return string if error or order info if everything is as expected.
-      set_holdings = function(account_id=NULL, symbol, sectype, side, tif, weight) {
-        # checks
+      set_holdings = function(account_id=NULL, symbol, sectype, side, tif, weight, check=TRUE) {
+        # set account_id
         if (is.null(account_id)) account_id = self$account_id
-        assert_true(self$check_account(account_id))
-        self$logger$info("Checks")
-        assert_string(account_id)
-        assert_string(symbol)
-        assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
-        assert_choice(side, c("BUY")) # DON'T ALLOW SELL (SHORT) YET
-        assert_choice(tif, c("GTC", "OPG", "DAY", "IOC", "PAX"))
-        assert_number(weight, lower = 0, upper = 10) # max leverage X 10
 
-        # check if gateway is ready
-        self$logger$info("Check gateway")
-        test_ib = self$check_gateway()
-        if (!test_ib) return("Check gateway didn't pass.")
+        # checks
+        if (check) {
+          # check arguments
+          assert_true(self$check_account(account_id))
+          self$logger$info("Checks")
+          assert_string(account_id)
+          assert_string(symbol)
+          assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
+          assert_choice(side, c("BUY")) # DON'T ALLOW SELL (SHORT) YET
+          assert_choice(tif, c("GTC", "OPG", "DAY", "IOC", "PAX"))
+          assert_number(weight, lower = 0, upper = 10) # max leverage X 10
+
+          # check if gateway is ready
+          self$logger$info("Check gateway")
+          test_ib = self$check_gateway()
+          if (!test_ib) return("Check gateway didn't pass.")
+        }
 
         # get conid by symbol
         conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
@@ -825,35 +834,34 @@
       #' @param sectype String, required, security type of the requested contract.
       #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
       #'     If symbol is set to NULL, the method will liquidate all positions.
+      #' @param check Boolean, optional, if TRUE check if account_id is in accounts,
+      #'     if Gataway is active and if function arguments have correct values and types.
+      #'     If FALSE, skip checks, but is faster
       #' @return It can return string if error or order info if everything is as expected.
-      liquidate = function(account_id=NULL, sectype=NULL, symbol=NULL) {
+      liquidate = function(account_id=NULL, sectype=NULL, symbol=NULL, check=TRUE) {
         # debug
         # symbol = "SPY"
         # sectype = "CFD"
 
-        # checks
+        # set account_id
         if (is.null(account_id)) account_id = self$account_id
-        assert_true(self$check_account(account_id))
-        assert_string(account_id)
-        assert_string(symbol, null.ok = TRUE)
-        assert_choice(sectype,
-                      choices = c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"),
-                      null.ok = TRUE)
 
-        # check if gateway is ready
-        self$logger$info("Check gateway")
-        if (!self$check_gateway()) {
-          self$logger$warn("Check gateway didn't pass.")
-          return("Check gateway didn't pass.")
-        }
+        # checks
+        if (check) {
+          # check arguments
+          assert_true(self$check_account(account_id))
+          self$logger$info("Checks")
+          assert_true(self$check_account(account_id))
+          assert_string(account_id)
+          assert_string(symbol, null.ok = TRUE)
+          assert_choice(sectype,
+                        choices = c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"),
+                        null.ok = TRUE)
 
-        # check if account id is in accounts
-        self$logger$info("Check accounts")
-        accounts = self$get_portfolio_accounts()
-        accounts = unlist(lapply(accounts, `[`, "id"))
-        if (!(account_id %in% accounts)) {
-          self$logger$warn("account_id not in accounts.")
-          return("account_id not in accounts.")
+          # check if gateway is ready
+          self$logger$info("Check gateway")
+          test_ib = self$check_gateway()
+          if (!test_ib) return("Check gateway didn't pass.")
         }
 
         # get conid by symbol
@@ -978,6 +986,31 @@
       }
     ),
     private = list(
-      notify = NULL
+      notify = NULL,
+      get_conids_by_exchange_dump = function() {
+        exchange = "NYSE"
+        conids = tryCatch({self$get_conids_by_exchange(exchange)},
+                          error = function(e) NULL)
+        tries = 0
+        while (is.null(conids) & tries < 10) {
+          conids = tryCatch({self$get_conids_by_exchange(exchange)},
+                            error = function(e) NULL)
+          Sys.sleep(0.5)
+          tries = tries + 1
+        }
+        if (is.null(conids)) return(NULL)
+        return(conids)
+      },
+      matches_criteria = function(item) {
+        us_ex = c("NYSE", "AMEX", "NMS", "SCM", "BATS", "ARCA")
+        if (item$assetClass == "STK") {
+          for (contract in item$contracts) {
+            if (contract$exchange %in% us_ex) {
+              return(TRUE)
+            }
+          }
+        }
+        return(FALSE)
+      }
     )
   )

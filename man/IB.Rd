@@ -22,6 +22,8 @@ Get data data from IB Client Portal API.
 \item{\code{email_config}}{Configuration for email notifications.}
 
 \item{\code{logger}}{Logger object for logging messages.}
+
+\item{\code{conids_us}}{Helped object that contains all conids for US market.}
 }
 \if{html}{\out{</div>}}
 }
@@ -651,7 +653,7 @@ A list containing details of portfolio subaccounts.
 \subsection{Method \code{get_portfolio_summary()}}{
 Retrieves information regarding settled cash, cash balances, etc., in the account’s base currency and other cash balances held in other currencies.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_summary(account_id)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_portfolio_summary(account_id = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -839,7 +841,7 @@ Html character.
 \subsection{Method \code{get_conid_by_symbol()}}{
 Get Conid by symbol
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_conid_by_symbol(symbol, sectype, exchange)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_conid_by_symbol(symbol, sectype)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -863,7 +865,15 @@ Conid.
 \subsection{Method \code{set_holdings()}}{
 Performs a GET request to the specified Interactive Brokers API endpoint.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$set_holdings(account_id = NULL, symbol, sectype, side, tif, weight)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$set_holdings(
+  account_id = NULL,
+  symbol,
+  sectype,
+  side,
+  tif,
+  weight,
+  check = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -881,6 +891,10 @@ Performs a GET request to the specified Interactive Brokers API endpoint.
 Valid Values: GTC, OPG, DAY, IOC, PAX (CRYPTO ONLY).}
 
 \item{\code{weight}}{Numeric, required, portfolio weight.}
+
+\item{\code{check}}{Boolean, optional, if TRUE check if account_id is in accounts,
+if Gataway is active and if function arguments have correct values and types.
+If FALSE, skip checks, but is faster}
 }
 \if{html}{\out{</div>}}
 }
@@ -894,7 +908,7 @@ It can return string if error or order info if everything is as expected.
 \subsection{Method \code{liquidate()}}{
 Liquidate all positions by symbol.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$liquidate(account_id = NULL, sectype = NULL, symbol = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$liquidate(account_id = NULL, sectype = NULL, symbol = NULL, check = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -906,6 +920,10 @@ Liquidate all positions by symbol.
 
 \item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.
 If symbol is set to NULL, the method will liquidate all positions.}
+
+\item{\code{check}}{Boolean, optional, if TRUE check if account_id is in accounts,
+if Gataway is active and if function arguments have correct values and types.
+If FALSE, skip checks, but is faster}
 }
 \if{html}{\out{</div>}}
 }
