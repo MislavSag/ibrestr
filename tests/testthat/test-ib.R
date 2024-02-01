@@ -1,8 +1,6 @@
 library(testthat)
 
 
-
-
 # Instantiate the IB object
 ib_instance <- IB$new(host = Sys.getenv("HOST"),
                       port = 5000,

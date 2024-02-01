@@ -8,7 +8,7 @@ You can install the development version from GitHub with:
 
 ```R
 # install.packages("devtools")
-devtools::install_github("your-github-username/IBClientPortal")
+devtools::install_github("MislavSag/ibrestr")
 ```
 
 ## Usage
