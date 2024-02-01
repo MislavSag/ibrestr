@@ -1,21 +1,20 @@
 library(testthat)
 
 
-# creditentials
-HOST = "cgspaperpra.eastus.azurecontainer.io"
+
 
 # Instantiate the IB object
-ib_instance <- IB$new(host = HOST,
+ib_instance <- IB$new(host = Sys.getenv("HOST"),
                       port = 5000,
                       strategy_name = "Paper test",
-                      account_id = "DU6474915",
+                      account_id = Sys.getenv("ACCOUNT_ID"),
                       email_config = list(
                         "email_from" = "mislav.sagovac@contentio.biz",
                         "email_to" = "mislav.sagovac@contentio.biz",
-                        "smtp_host" = "mail.contentio.biz",
+                        "smtp_host" = Sys.getenv("EMAILHOST"),
                         "smtp_port" = 587,
-                        "smtp_user" = "mislav.sagovac@contentio.biz",
-                        "smtp_password" = "s8^t5?}r-x&Q"
+                        "smtp_user" = Sys.getenv("EMAILUSER"),
+                        "smtp_password" = Sys.getenv("EMAILPASS")
                       ),
                       logger = NULL)
 
