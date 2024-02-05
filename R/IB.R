@@ -653,7 +653,6 @@
       #'
       #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
       #' @param sectype String, required, security type of the requested contract.
-      #' @param exchange String, required, exchange to receive information for in relation to the contract.
       #' @return Conid.
       get_conid_by_symbol = function(symbol, sectype) {
         # find con id by symbol
@@ -725,7 +724,7 @@
         }
 
         # get conid by symbol
-        conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
+        conid = self$get_conid_by_symbol(symbol, sectype = "CFD")
 
         # get position
         self$logger$warn("Get position for %s", symbol)
@@ -865,7 +864,7 @@
         }
 
         # get conid by symbol
-        conid = self$get_conid_by_symbol(symbol, sectype = "CFD", "NYSE")
+        conid = self$get_conid_by_symbol(symbol, sectype = "CFD")
 
         # get position
         self$logger$info("Get position for %s", symbol)

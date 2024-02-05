@@ -850,8 +850,6 @@ Get Conid by symbol
 \item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
 
 \item{\code{sectype}}{String, required, security type of the requested contract.}
-
-\item{\code{exchange}}{String, required, exchange to receive information for in relation to the contract.}
 }
 \if{html}{\out{</div>}}
 }
