@@ -22,8 +22,6 @@ Get data data from IB Client Portal API.
 \item{\code{email_config}}{Configuration for email notifications.}
 
 \item{\code{logger}}{Logger object for logging messages.}
-
-\item{\code{conids_us}}{Helped object that contains all conids for US market.}
 }
 \if{html}{\out{</div>}}
 }
@@ -841,7 +839,7 @@ Html character.
 \subsection{Method \code{get_conid_by_symbol()}}{
 Get Conid by symbol
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_conid_by_symbol(symbol, sectype)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_conid_by_symbol(symbol, sectype, isUS = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -850,6 +848,8 @@ Get Conid by symbol
 \item{\code{symbol}}{String, required, underlying symbol of interest or company name if ‘name’ is set to true.}
 
 \item{\code{sectype}}{String, required, security type of the requested contract.}
+
+\item{\code{isUS}}{Boolean, optional, if TRUE US stocks are returned,}
 }
 \if{html}{\out{</div>}}
 }

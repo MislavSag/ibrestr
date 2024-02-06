@@ -33,9 +33,6 @@
       #' @field logger Logger object for logging messages.
       logger = NULL,
 
-      #' @field conids_us Helped object that contains all conids for US market.
-      conids_us = NULL,
-
       #' @description
       #' Create a new IB object.
       #'
@@ -82,9 +79,6 @@
           # Default to a no-operation logger
           self$logger = lgr::get_logger("NOP") # NOP logger does nothing
         }
-
-        # get all conids for US market
-        self$conids_us = private$get_conids_by_exchange_dump()
       },
 
       #' @description
@@ -194,8 +188,8 @@
       #'        Valid values: "STK", "IND", "BOND".
       #' @return A list containing details of the contract such as conid, companyName, symbol, etc.
       search_contract_by_symbol = function(symbol, name = NULL, secType = NULL) {
-        query <- list(symbol = symbol, name = name, secType = secType)
-        query <- query[!sapply(query, is.null)]
+        query = list(symbol = symbol, name = name, secType = secType)
+        query = query[!sapply(query, is.null)]
         self$get("/iserver/secdef/search", query)
       },
 
@@ -653,16 +647,21 @@
       #'
       #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
       #' @param sectype String, required, security type of the requested contract.
+      #' @param isUS Boolean, optional, if TRUE US stocks are returned,
       #' @return Conid.
-      get_conid_by_symbol = function(symbol, sectype) {
-        # find con id by symbol
-        if (!is.null(self$conids_us)) {
-          conid_stk = self$conids_us[ticker == symbol, conid]
-        } else {
-          conid_stk = self$get_stocks_by_symbol(symbol)
-          conid_stk = Filter(private$matches_criteria, conid_stk[[1]])
-          conid_stk = conid_stk[[1]]$contracts[[1]]$conid
-        }
+      get_conid_by_symbol = function(symbol, sectype, isUS = TRUE) {
+        # DEBUG
+        # symbol  = "AAPL"
+        # sectype = "CFD"
+        # isUS    = TRUE
+
+        # Get CindID for STK
+        conid_by_symbol = self$search_contract_by_symbol(symbol)
+        stk_by_symbol = self$get_stocks_by_symbol(symbol)
+        stk_by_symbol = Filter(function(x) {
+          private$matches_criteria(x, asset_class = "STK", is_us = isUS)
+        }, stk_by_symbol[[1]])
+        conid_stk = stk_by_symbol[[1]]$contracts[[1]]$conid
 
         # check if conid_stk is empty
         if (length(conid_stk) == 0) {
@@ -671,16 +670,15 @@
 
         # find conid for sectype
         self$logger$info("Find conid by symbol for symbol %s", symbol)
-        contracts_ = self$search_contract_by_symbol(symbol)
-        contract = self$get_sec_definfo(conid_stk, "CFD")
+        contract = self$get_sec_definfo(conid_stk, sectype)
         conid = tryCatch({contract[[1]]$conid}, error = function(e) NULL)
 
         # check if conid is found
         if (is.null(conid)) {
           self$logger$info("ConID is NULL for the symbol %s", symbol)
-          index_ = which(lapply(contracts_, `[[`, "conid") == conid_stk)
-          index_cfd = which(lapply(contracts_[[index_]]$sections, `[[`, "secType") == "CFD")
-          conid = contracts_[[index_]]$sections[[index_cfd]]$conid
+          index_ = which(lapply(conid_by_symbol, `[[`, "conid") == conid_stk)
+          index_cfd = which(lapply(conid_by_symbol[[index_]]$sections, `[[`, "secType") == sectype)
+          conid = conid_by_symbol[[index_]]$sections[[index_cfd]]$conid
         }
         self$logger$info("ConId is %s", conid)
 
@@ -986,25 +984,12 @@
     ),
     private = list(
       notify = NULL,
-      get_conids_by_exchange_dump = function() {
-        exchange = "NYSE"
-        conids = tryCatch({self$get_conids_by_exchange(exchange)},
-                          error = function(e) NULL)
-        tries = 0
-        while (is.null(conids) & tries < 10) {
-          conids = tryCatch({self$get_conids_by_exchange(exchange)},
-                            error = function(e) NULL)
-          Sys.sleep(0.5)
-          tries = tries + 1
-        }
-        if (is.null(conids)) return(NULL)
-        return(conids)
-      },
-      matches_criteria = function(item) {
-        us_ex = c("NYSE", "AMEX", "NMS", "SCM", "BATS", "ARCA")
+      matches_criteria = function(item,
+                                  asset_class = "STK",
+                                  is_us = TRUE) {
         if (item$assetClass == "STK") {
           for (contract in item$contracts) {
-            if (contract$exchange %in% us_ex) {
+            if (contract$isUS == is_us) {
               return(TRUE)
             }
           }
