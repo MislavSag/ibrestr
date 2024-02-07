@@ -303,7 +303,7 @@
           } else if (!is.null(placed_order[[1]]$id)) {
             # Alternate Response Object - order requires confirmation due to a warning
             self$logger$info("Alternate Response Object - order requires confirmation")
-            Sys.sleep(1L)
+            Sys.sleep(2L)
             replyId =  placed_order[[1]]$id[[1]]
             confirmation = self$confirm_order(replyId, confirmed = TRUE)
             return(list(order = confirmation, info = "Confirmation"))
@@ -700,6 +700,15 @@
       #'     If FALSE, skip checks, but is faster
       #' @return It can return string if error or order info if everything is as expected.
       set_holdings = function(account_id=NULL, symbol, sectype, side, tif, weight, check=TRUE) {
+        # DEBUG
+        # account_id = "DU6474915"
+        # symbol = "PLTR"
+        # sectype = "CFD"
+        # side = "BUY"
+        # tif = "GTC"
+        # weight = 0.02
+        # check = TRUE
+
         # set account_id
         if (is.null(account_id)) account_id = self$account_id
 
