@@ -651,7 +651,7 @@
       #' @return Conid.
       get_conid_by_symbol = function(symbol, sectype, isUS = TRUE) {
         # DEBUG
-        # symbol  = "AAPL"
+        # symbol  = "CLF"
         # sectype = "CFD"
         # isUS    = TRUE
 
@@ -661,7 +661,10 @@
         stk_by_symbol = Filter(function(x) {
           private$matches_criteria(x, asset_class = "STK", is_us = isUS)
         }, stk_by_symbol[[1]])
-        conid_stk = stk_by_symbol[[1]]$contracts[[1]]$conid
+        conid_stk = stk_by_symbol[[1]]$contracts
+        conid_stk_us = vapply(conid_stk, `[[`, "isUS", FUN.VALUE = logical(1))
+        conid_stk = conid_stk[conid_stk_us]
+        conid_stk = conid_stk[[1]]$conid
 
         # check if conid_stk is empty
         if (length(conid_stk) == 0) {
