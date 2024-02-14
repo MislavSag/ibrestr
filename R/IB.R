@@ -651,13 +651,23 @@
       #' @return Conid.
       get_conid_by_symbol = function(symbol, sectype, isUS = TRUE) {
         # DEBUG
-        # symbol  = "CLF"
+        # symbol  = "CPNG"
         # sectype = "CFD"
         # isUS    = TRUE
 
         # Get CindID for STK
         conid_by_symbol = self$search_contract_by_symbol(symbol)
         stk_by_symbol = self$get_stocks_by_symbol(symbol)
+        stk_by_symbol_1 = tryCatch(stk_by_symbol[[1]],
+                                   error = function(e) NULL)
+        tries = 0
+        while (is.null(stk_by_symbol_1) && tries < 4) {
+          stk_by_symbol_1 = tryCatch(stk_by_symbol[[1]],
+                                     error = function(e) NULL)
+          tries = tries + 1
+        }
+        if (is.null(stk_by_symbol_1)) stop("Error: stk_by_symbol_1 is NULL")
+
         stk_by_symbol = Filter(function(x) {
           private$matches_criteria(x, asset_class = "STK", is_us = isUS)
         }, stk_by_symbol[[1]])
@@ -675,6 +685,12 @@
         self$logger$info("Find conid by symbol for symbol %s", symbol)
         contract = self$get_sec_definfo(conid_stk, sectype)
         conid = tryCatch({contract[[1]]$conid}, error = function(e) NULL)
+
+        tries = 0
+        while (is.null(conid) && tries < 4) {
+          conid = tryCatch({contract[[1]]$conid}, error = function(e) NULL)
+          tries = tries + 1
+        }
 
         # check if conid is found
         if (is.null(conid)) {
