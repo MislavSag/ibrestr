@@ -3,7 +3,7 @@
 #' @import httr
 #' @import jsonlite
 #' @import checkmate
-#' @import mailR
+#' @import blastula
 #' @import lgr
 #' @import lgrExtra
 

@@ -22,7 +22,7 @@ Imports:
   httr,
   jsonlite,
   checkmate,
-  mailR,
+  blastula,
   lgr,
   lgrExtra
 Suggests: 
