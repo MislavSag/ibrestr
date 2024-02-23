@@ -2,10 +2,10 @@
 
 export(IB)
 import(R6)
+import(blastula)
 import(checkmate)
 import(data.table)
 import(httr)
 import(jsonlite)
 import(lgr)
 import(lgrExtra)
-import(mailR)
