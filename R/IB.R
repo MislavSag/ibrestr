@@ -142,25 +142,42 @@
       #'
       #' @param subject The subject of the email.
       #' @param body The body content of the email.
-      #' @param html Boolean indicating if the body content is HTML. Defaults to FALSE.
-      send_email = function(subject, body, html = FALSE) {
-        if (private$notify) {
-          send.mail(
+      send_email = function(subject, body) {
+        # if (private$notify) {
+        #   send.mail(
+        #     from = self$email_config$email_from,
+        #     to = self$email_config$email_to,
+        #     subject = paste0(toupper(self$strategy_name), " - ", subject),
+        #     body = body,
+        #     encoding = "utf-8",
+        #     smtp = list(
+        #       host.name = self$email_config$smtp_host,
+        #       port = self$email_config$smtp_port,
+        #       user.name = self$email_config$smtp_user,
+        #       passwd = self$email_config$smtp_password
+        #     ),
+        #     authenticate = TRUE,
+        #     html = html
+        #   )
+        # }
+        msg = compose_email(
+          body = body,
+          title = self$strategy_name
+        )
+        Sys.setenv(EMAIL_PASS = self$email_config$smtp_password)
+        msg %>%
+          smtp_send(
             from = self$email_config$email_from,
             to = self$email_config$email_to,
             subject = paste0(toupper(self$strategy_name), " - ", subject),
-            body = body,
-            encoding = "utf-8",
-            smtp = list(
-              host.name = self$email_config$smtp_host,
+            credentials = creds_envvar(
+              user = self$email_config$smtp_user,
+              pass_envvar = "EMAIL_PASS",
+              host = self$email_config$smtp_host,
               port = self$email_config$smtp_port,
-              user.name = self$email_config$smtp_user,
-              passwd = self$email_config$smtp_password
-            ),
-            authenticate = TRUE,
-            html = html
+              use_ssl = TRUE
+            )
           )
-        }
       },
 
 
@@ -604,8 +621,7 @@
         if (private$notify) {
           self$logger$info("Notification - send email")
           self$send_email("Check gateway returned FALSE. Check ACI",
-                          "Try to 1) restart ACI 2) ceck Ibema issues",
-                          html = FALSE)
+                          "Try to 1) restart ACI 2) ceck Ibema issues")
         }
 
         return(TRUE)
@@ -833,8 +849,7 @@
             # notify
             if (private$notify) {
               self$send_email("Order status not filled",
-                              "Status is not filled",
-                              html = FALSE)
+                              "Status is not filled")
             }
             self$logger$warn("Status is not filled for %s", symbol)
             return("Status is not filled")
@@ -845,8 +860,8 @@
         if (private$notify) {
           self$logger$info("Notification - send email for %s", symbol)
           self$send_email("Order with Set Holdings",
-                          self$order_result_to_html(status),
-                          html = TRUE)
+                          self$order_result_to_html(status))
+          self$logger$info("Notification - email sent for %s", symbol)
         }
 
         return(placed_order)
@@ -946,10 +961,9 @@
 
         # notify
         if (private$notify) {
-          print("Notification - send email")
+          self$logger$info("Notification - send email")
           self$send_email("Order with Liquidate",
-                          self$order_result_to_html(status),
-                          html = TRUE)
+                          self$order_result_to_html(status))
         }
         return(placed_order)
       },
@@ -1011,7 +1025,7 @@
       }
     ),
     private = list(
-      notify = NULL,
+      notify = FALSE,
       matches_criteria = function(item,
                                   asset_class = "STK",
                                   is_us = TRUE) {

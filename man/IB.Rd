@@ -183,7 +183,7 @@ The response from the DELETE request.
 \subsection{Method \code{send_email()}}{
 Sends an email notification.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$send_email(subject, body, html = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$send_email(subject, body)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -192,8 +192,6 @@ Sends an email notification.
 \item{\code{subject}}{The subject of the email.}
 
 \item{\code{body}}{The body content of the email.}
-
-\item{\code{html}}{Boolean indicating if the body content is HTML. Defaults to FALSE.}
 }
 \if{html}{\out{</div>}}
 }
