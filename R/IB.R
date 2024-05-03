@@ -652,7 +652,8 @@ IB = R6::R6Class(
     order_result_to_html = function(order) {
       html_content <- "<html><body><h2>Order Details</h2><ul>"
       for (name in names(order)) {
-        html_content <- paste0(html_content, "<li><b>", name, ":</b> ", order[[name]], "</li>")
+        html_content <- paste0(html_content, "<li><b>", name, ":</b> ",
+                               order[[name]], "</li>")
       }
       html_content = paste0(html_content, "</ul></body></html>")
       html_content
@@ -859,8 +860,7 @@ IB = R6::R6Class(
       # notify
       if (private$notify) {
         self$logger$info("Notification - send email for %s", symbol)
-        self$send_email("Order with Set Holdings",
-                        self$order_result_to_html(status))
+        self$send_email("Order with Set Holdings", status)
         self$logger$info("Notification - email sent for %s", symbol)
       }
 
@@ -952,8 +952,7 @@ IB = R6::R6Class(
           # notify
           if (private$notify) {
             self$send_email("Order status not filled",
-                            "Status is not filled",
-                            html = FALSE)
+                            "Status is not filled")
           }
           return("Status is not filled")
         }
@@ -962,8 +961,7 @@ IB = R6::R6Class(
       # notify
       if (private$notify) {
         self$logger$info("Notification - send email")
-        self$send_email("Order with Liquidate",
-                        self$order_result_to_html(status))
+        self$send_email("Order with Liquidate", status)
       }
       return(placed_order)
     },
