@@ -203,9 +203,10 @@ IB = R6::R6Class(
     #' @param name Boolean, optional, determines if symbol reflects company name or ticker symbol.
     #' @param secType String, optional, declares underlying security type.
     #'        Valid values: "STK", "IND", "BOND".
+    #' @param pattern Boolean, optional, if TRUE, the symbol is treated as a pattern.
     #' @return A list containing details of the contract such as conid, companyName, symbol, etc.
-    search_contract_by_symbol = function(symbol, name = NULL, secType = NULL) {
-      query = list(symbol = symbol, name = name, secType = secType)
+    search_contract_by_symbol = function(symbol, name = NULL, secType = NULL, pattern = FALSE) {
+      query = list(symbol = symbol, name = name, secType = secType, pattern = pattern)
       query = query[!sapply(query, is.null)]
       self$get("/iserver/secdef/search", query)
     },

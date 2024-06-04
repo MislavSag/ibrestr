@@ -224,7 +224,12 @@ A data frame with columns.
 Searches by underlying symbol or company name and relays back what derivative contract(s) it has.
 This endpoint must be called before using /secdef/info.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$search_contract_by_symbol(symbol, name = NULL, secType = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{IB$search_contract_by_symbol(
+  symbol,
+  name = NULL,
+  secType = NULL,
+  pattern = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -236,6 +241,8 @@ This endpoint must be called before using /secdef/info.
 
 \item{\code{secType}}{String, optional, declares underlying security type.
 Valid values: "STK", "IND", "BOND".}
+
+\item{\code{pattern}}{Boolean, optional, if TRUE, the symbol is treated as a pattern.}
 }
 \if{html}{\out{</div>}}
 }
