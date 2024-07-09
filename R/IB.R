@@ -446,7 +446,7 @@ IB = R6::R6Class(
     get_historical_data_hmds = function(conid,
                                         period,
                                         bar,
-                                        outsideRth = NULL,
+                                        outsideRthideRth = NULL,
                                         startTime = NULL,
                                         direction = NULL,
                                         barType = NULL,
