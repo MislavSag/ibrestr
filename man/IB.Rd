@@ -47,7 +47,7 @@ Get data data from IB Client Portal API.
 \item \href{#method-IB-get_order_status_repeated}{\code{IB$get_order_status_repeated()}}
 \item \href{#method-IB-get_trades}{\code{IB$get_trades()}}
 \item \href{#method-IB-get_market_data_snapshot}{\code{IB$get_market_data_snapshot()}}
-\item \href{#method-IB-get_historical_data_beta}{\code{IB$get_historical_data_beta()}}
+\item \href{#method-IB-get_historical_data_hmds}{\code{IB$get_historical_data_hmds()}}
 \item \href{#method-IB-get_historical_data}{\code{IB$get_historical_data()}}
 \item \href{#method-IB-get_portfolio_accounts}{\code{IB$get_portfolio_accounts()}}
 \item \href{#method-IB-get_portfolio_subaccounts}{\code{IB$get_portfolio_subaccounts()}}
@@ -545,12 +545,12 @@ A list containing market data for the specified contracts.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-IB-get_historical_data_beta"></a>}}
-\if{latex}{\out{\hypertarget{method-IB-get_historical_data_beta}{}}}
-\subsection{Method \code{get_historical_data_beta()}}{
+\if{html}{\out{<a id="method-IB-get_historical_data_hmds"></a>}}
+\if{latex}{\out{\hypertarget{method-IB-get_historical_data_hmds}{}}}
+\subsection{Method \code{get_historical_data_hmds()}}{
 Retrieves a list of historical market data for a given contract identifier.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_data_beta(
+\if{html}{\out{<div class="r">}}\preformatted{IB$get_historical_data_hmds(
   conid,
   period,
   bar,
@@ -572,7 +572,8 @@ Retrieves a list of historical market data for a given contract identifier.
 
 \item{\code{outsideRth}}{Boolean, optional, define if data should be returned for trades outside regular trading hours.}
 
-\item{\code{startTime}}{String, optional, specify the value from where historical data should be taken.}
+\item{\code{startTime}}{String, optional, specify the value from where historical data should be taken.
+Should be in the form YYYYMMDD-hh:mm:ss, for example startTime=20231018-16:00:00.}
 
 \item{\code{direction}}{String, optional, specify the direction from which market data should be returned.}
 
