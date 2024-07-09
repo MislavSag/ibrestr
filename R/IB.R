@@ -441,6 +441,7 @@ IB = R6::R6Class(
     #'     Should be in the form YYYYMMDD-hh:mm:ss, for example startTime=20231018-16:00:00.
     #' @param direction String, optional, specify the direction from which market data should be returned.
     #' @param barType String, optional, returns valid bar types for which data may be requested.
+    #' @param clean Boolean, optional, if TRUE extract data object.
     #' @return A list containing historical market data.
     get_historical_data_hmds = function(conid,
                                         period,
@@ -448,14 +449,15 @@ IB = R6::R6Class(
                                         outsideRth = NULL,
                                         startTime = NULL,
                                         direction = NULL,
-                                        barType = NULL) {
+                                        barType = NULL,
+                                        clean = FALSE) {
       query <- list(conid = conid, period = period, bar = bar,
                     outsideRth = outsideRth, startTime = startTime,
                     direction = direction, barType = barType)
       query <- query[!sapply(query, is.null)]
       md = self$get("/hmds/history", query = query)
       if (clean) {
-        md = as.data.table(cbind.data.frame(symbol = md$symbol, rbindlist(md$data)))
+        md = rbindlist(md$data)
         md[, datetime := as.POSIXct(as.numeric(t) / 1000,
                                     origin = "1970-01-01",
                                     tz = "America/New_York")]

@@ -557,7 +557,8 @@ Retrieves a list of historical market data for a given contract identifier.
   outsideRth = NULL,
   startTime = NULL,
   direction = NULL,
-  barType = NULL
+  barType = NULL,
+  clean = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -578,6 +579,8 @@ Should be in the form YYYYMMDD-hh:mm:ss, for example startTime=20231018-16:00:00
 \item{\code{direction}}{String, optional, specify the direction from which market data should be returned.}
 
 \item{\code{barType}}{String, optional, returns valid bar types for which data may be requested.}
+
+\item{\code{clean}}{Boolean, optional, if TRUE extract data object.}
 }
 \if{html}{\out{</div>}}
 }
