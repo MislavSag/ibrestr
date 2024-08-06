@@ -79,6 +79,10 @@ IB = R6::R6Class(
         # Default to a no-operation logger
         self$logger = lgr::get_logger("NOP") # NOP logger does nothing
       }
+
+      # Load all STK symbol
+      # TODO: Think if this is good idea
+
     },
 
     #' @description
@@ -187,10 +191,11 @@ IB = R6::R6Class(
     #' Note: This is only available for Stock contracts.
     #'
     #' @param exchange A string specifying the exchange.
+    #' @param assetClass A string specifying the asset class.
     #' @return A data frame with columns.
-    get_conids_by_exchange = function(exchange) {
+    get_conids_by_exchange = function(exchange, assetClass = "STK") {
       self$logger$info(paste("Sending GET request to", "/trsrv/all-conids"))
-      query = list(exchange = exchange)
+      query = list(exchange = exchange, assetClass = assetClass)
       result = self$get("/trsrv/all-conids", query)
       rbindlist(result)
     },
@@ -266,6 +271,16 @@ IB = R6::R6Class(
                     exchange = exchange, exchangeFilter = exchangeFilter)
       query <- query[!sapply(query, is.null)]
       self$get("/trsrv/secdef/schedule", query)
+    },
+
+    #' @description
+    #' Requests full contract details for the given contract identifier (conid).
+    #'
+    #' @param conid String, required, contract identifier for the requested contract.
+    #' @return A list containing the contract details.
+    get_contract_info_by_conid = function(conid) {
+      endpoint <- sprintf("/iserver/contract/%s/info", conid)
+      self$get(endpoint)
     },
 
 
@@ -686,7 +701,7 @@ IB = R6::R6Class(
     #' @return Conid.
     get_conid_by_symbol = function(symbol, sectype, isUS = TRUE) {
       # DEBUG
-      # symbol  = "CPNG"
+      # symbol  = "SPY"
       # sectype = "CFD"
       # isUS    = TRUE
 
@@ -743,6 +758,7 @@ IB = R6::R6Class(
     #' Performs a GET request to the specified Interactive Brokers API endpoint.
     #'
     #' @param account_id String, required, the account ID for which the order should be placed.
+    #' @param conid String, required, contract identifier of the underlying or the final derivative conid.
     #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
     #' @param sectype String, required, security type of the requested contract.
     #' @param side String, required, Valid Values: SELL or BUY.
@@ -753,7 +769,10 @@ IB = R6::R6Class(
     #'     if Gataway is active and if function arguments have correct values and types.
     #'     If FALSE, skip checks, but is faster
     #' @return It can return string if error or order info if everything is as expected.
-    set_holdings = function(account_id=NULL, symbol, sectype, side, tif, weight, check=TRUE) {
+    set_holdings = function(account_id=NULL, conid = NULL, symbol, sectype,
+                            side,
+                            tif,
+                            weight, check=TRUE) {
       # DEBUG
       # account_id = "DU6474915"
       # symbol = "PLTR"
@@ -773,6 +792,7 @@ IB = R6::R6Class(
         self$logger$info("Checks")
         assert_string(account_id)
         assert_string(symbol)
+        assert_int(conid)
         assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
         assert_choice(side, c("BUY")) # DON'T ALLOW SELL (SHORT) YET
         assert_choice(tif, c("GTC", "OPG", "DAY", "IOC", "PAX"))
@@ -785,7 +805,9 @@ IB = R6::R6Class(
       }
 
       # get conid by symbol
-      conid = self$get_conid_by_symbol(symbol, sectype = "CFD")
+      if (is.null(conid)) {
+        conid = self$get_conid_by_symbol(symbol, sectype = "CFD")
+      }
 
       # get position
       self$logger$warn("Get position for %s", symbol)
@@ -889,6 +911,7 @@ IB = R6::R6Class(
     #' Liquidate all positions by symbol.
     #'
     #' @param account_id String, required, the account ID for which the order should be placed.
+    #' @param conid String, required, contract identifier of the underlying or the final derivative conid.
     #' @param sectype String, required, security type of the requested contract.
     #' @param symbol String, required, underlying symbol of interest or company name if ‘name’ is set to true.
     #'     If symbol is set to NULL, the method will liquidate all positions.
@@ -896,7 +919,7 @@ IB = R6::R6Class(
     #'     if Gataway is active and if function arguments have correct values and types.
     #'     If FALSE, skip checks, but is faster
     #' @return It can return string if error or order info if everything is as expected.
-    liquidate = function(account_id=NULL, sectype=NULL, symbol=NULL, check=TRUE) {
+    liquidate = function(account_id=NULL, conid = NULL, sectype=NULL, symbol=NULL, check=TRUE) {
       # debug
       # symbol = "SPY"
       # sectype = "CFD"
@@ -912,6 +935,7 @@ IB = R6::R6Class(
         assert_true(self$check_account(account_id))
         assert_string(account_id)
         assert_string(symbol, null.ok = TRUE)
+        assert_int(conid, null.ok = TRUE)
         assert_choice(sectype,
                       choices = c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"),
                       null.ok = TRUE)
@@ -923,7 +947,9 @@ IB = R6::R6Class(
       }
 
       # get conid by symbol
-      conid = self$get_conid_by_symbol(symbol, sectype = "CFD")
+      if (is.null(conid)) {
+        conid = self$get_conid_by_symbol(symbol, sectype = "CFD")
+      }
 
       # get position
       self$logger$info("Get position for %s", symbol)
