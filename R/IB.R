@@ -775,12 +775,13 @@ IB = R6::R6Class(
                             weight, check=TRUE) {
       # DEBUG
       # account_id = "DU6474915"
-      # symbol = "PLTR"
+      # symbol = "TLT"
       # sectype = "CFD"
       # side = "BUY"
       # tif = "GTC"
-      # weight = 0.02
+      # weight = 1
       # check = TRUE
+      # conid = 134770764
 
       # set account_id
       if (is.null(account_id)) account_id = self$account_id
@@ -792,7 +793,7 @@ IB = R6::R6Class(
         self$logger$info("Checks")
         assert_string(account_id)
         assert_string(symbol)
-        assert_int(conid)
+        assert_int(conid, null.ok = TRUE)
         assert_choice(sectype, c("STK", "CFD", "OPT", "CASH", "WAR", "FUT"))
         assert_choice(side, c("BUY")) # DON'T ALLOW SELL (SHORT) YET
         assert_choice(tif, c("GTC", "OPG", "DAY", "IOC", "PAX"))
@@ -930,7 +931,6 @@ IB = R6::R6Class(
       # checks
       if (check) {
         # check arguments
-        assert_true(self$check_account(account_id))
         self$logger$info("Checks")
         assert_true(self$check_account(account_id))
         assert_string(account_id)
